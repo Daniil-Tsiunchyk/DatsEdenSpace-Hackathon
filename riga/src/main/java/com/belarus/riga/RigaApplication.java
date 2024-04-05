@@ -10,4 +10,3 @@ public class RigaApplication {
         SpringApplication.run(RigaApplication.class, args);
     }
 }
-
