@@ -54,15 +54,10 @@ public class GraphVisualizer {
         return new JGraphXAdapter<>(graph);
     }
 
-    public static void main(String[] args) {
-        PlayerUniverseResponse response = new PlayerUniverseResponse();
+    public static void main(String[] args) throws Exception {
         UniverseClient client = new UniverseClient();
-        try {
-            response = client.getPlayerUniverse("660e963e5bc03660e963e5bc06");
-            System.out.println(response);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        PlayerUniverseResponse response = client.getPlayerUniverse();
+        System.out.println(response);
         buildAndShowGraph(response);
     }
 }

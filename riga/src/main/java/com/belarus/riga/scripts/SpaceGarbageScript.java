@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class SpaceGarbageManager {
+public class SpaceGarbageScript {
 
     public static int[][] parseShipGarbage(Ship ship) {
         int[][] cargoSpace = new int[ship.getCapacityY()][ship.getCapacityX()];
@@ -33,7 +33,7 @@ public class SpaceGarbageManager {
     // Это основной метод, который нам нужно будет дополнить для выполнения шагов 3 и 4
     public static void manageGarbage() throws Exception {
         UniverseClient universeClient = new UniverseClient();
-        PlayerUniverseResponse response = universeClient.getPlayerUniverse("660e963e5bc03660e963e5bc06");
+        PlayerUniverseResponse response = universeClient.getPlayerUniverse();
 
         // Шаг 1: Парсим текущий garbage
         int[][] shipGarbage = parseShipGarbage(response.getShip());

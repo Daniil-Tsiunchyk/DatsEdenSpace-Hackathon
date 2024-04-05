@@ -2,27 +2,15 @@ package com.belarus.riga.client;
 
 import java.io.IOException;
 
+import static com.belarus.riga.templates.ApiClient.sendPost;
+
 public class TravelClient {
-    public static void main(String[] args) {
-        HttpClientTemplate client = new HttpClientTemplate();
-        try {
-            // Пример POST запроса
 
-            String jsonPayload = "{\"key\": \"value\"}";
-            String responsePost = client.sendPost("https://datsedenspace.datsteam.dev/player/travel", jsonPayload);
-            System.out.println("POST Response: " + responsePost);
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                client.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
+    public static void main(String[] args) throws IOException {
+        // Пример POST запроса
+        String jsonPayload = "{\"key\": \"value\"}";
+        // Используйте ваш API_KEY тут
+        String responsePost = sendPost("player/travel", jsonPayload);
+        System.out.println("POST Response: " + responsePost);
     }
-
-
 }

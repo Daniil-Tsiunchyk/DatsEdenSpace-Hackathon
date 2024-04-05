@@ -6,7 +6,7 @@ import com.belarus.riga.client.UniverseClient;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-public class PlanetCounter {
+public class PlanetCounterScript {
 
     public static void main(String[] args) {
         UniverseClient client = new UniverseClient();
@@ -19,7 +19,7 @@ public class PlanetCounter {
     }
 
     private static TreeSet<String> fetchUniquePlanets(UniverseClient client) throws Exception {
-        PlayerUniverseResponse response = client.getPlayerUniverse("660e963e5bc03660e963e5bc06");
+        PlayerUniverseResponse response = client.getPlayerUniverse();
         return response.getUniverse().stream()
                 .flatMap(planetInfo -> planetInfo.stream().limit(2))
                 .map(Object::toString)

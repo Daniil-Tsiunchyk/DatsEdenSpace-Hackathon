@@ -1,52 +1,15 @@
 package com.belarus.riga.scripts;
 
 
+import com.belarus.riga.classes.PathInfo;
+import com.belarus.riga.classes.PlanetTravel;
 import com.belarus.riga.classes.PlayerUniverseResponse;
 import com.belarus.riga.client.UniverseClient;
-
-import lombok.Data;
 
 import java.util.*;
 
 public class PlanetTravelScript {
 
-    // Метод для преобразования данных из List<List<Object>> в List<PlanetTravel>
-    public static List<PlanetTravel> mapData(List<List<Object>> universe) {
-        List<PlanetTravel> result = new ArrayList<>();
-        for (List<Object> travel : universe) {
-            String departurePlanet = (String) travel.get(0);
-            String landingPlanet = (String) travel.get(1);
-            int fuel = (int) travel.get(2);
-            result.add(new PlanetTravel(departurePlanet, landingPlanet, fuel));
-        }
-        return result;
-    }
-    @Data
-    public static class PlanetTravel {
-        String departurePlanet;
-        String landingPlanet;
-        int fuel;
-
-        public PlanetTravel(String departurePlanet, String landingPlanet, int fuel) {
-            this.departurePlanet = departurePlanet;
-            this.landingPlanet = landingPlanet;
-            this.fuel = fuel;
-        }
-
-        @Override
-        public String toString() {
-            return departurePlanet + " -> " + landingPlanet + " (fuel: " + fuel + ")";
-        }
-    }
-    public static class PathInfo {
-        int totalFuel;
-        List<PlanetTravel> path;
-
-        public PathInfo(int totalFuel, List<PlanetTravel> path) {
-            this.totalFuel = totalFuel;
-            this.path = path;
-        }
-    }
     public static PathInfo findShortestPath(List<PlanetTravel> travels, String start, String end) {
         Map<String, Map<String, Integer>> graph = buildGraph(travels);
 
@@ -85,14 +48,16 @@ public class PlanetTravelScript {
         }
         return new PathInfo(distances.get(end), paths.getOrDefault(end, Collections.emptyList()));
     }
+
     private static Map<String, Map<String, Integer>> buildGraph(List<PlanetTravel> travels) {
         Map<String, Map<String, Integer>> graph = new HashMap<>();
         for (PlanetTravel travel : travels) {
-            graph.putIfAbsent(travel.departurePlanet, new HashMap<>());
-            graph.get(travel.departurePlanet).put(travel.landingPlanet, travel.fuel);
+            graph.putIfAbsent(travel.getDeparturePlanet(), new HashMap<>());
+            graph.get(travel.getDeparturePlanet()).put(travel.getLandingPlanet(), travel.getFuel());
         }
         return graph;
     }
+
     public static void main(String[] args) {
         List<PlanetTravel> travels = new ArrayList<>();
         PlayerUniverseResponse response = new PlayerUniverseResponse();
@@ -118,17 +83,18 @@ public class PlanetTravelScript {
         String start = "Earth";
         String end = "Pluto";
         PathInfo shortestPathInfo = findShortestPath(travels, start, end);
-        System.out.println("Shortest path fuel: " + shortestPathInfo.totalFuel);
+        System.out.println("Shortest path fuel: " + shortestPathInfo.getTotalFuel());
         System.out.println("Path: ");
-        for (PlanetTravel travel : shortestPathInfo.path) {
+        for (PlanetTravel travel : shortestPathInfo.getPath()) {
             System.out.println(travel);
         }
         List<String> result = shortestPathInfoString(travels, start, end);
     }
-    public static List<String> shortestPathInfoString(List<PlanetTravel> travels,String start, String end){
+
+    public static List<String> shortestPathInfoString(List<PlanetTravel> travels, String start, String end) {
         PathInfo shortestPathInfo = findShortestPath(travels, start, end);
         List<String> resultString = new ArrayList<>();
-        for (PlanetTravel travel : shortestPathInfo.path) {
+        for (PlanetTravel travel : shortestPathInfo.getPath()) {
             resultString.add(travel.getLandingPlanet());
         }
         System.out.println("========");
