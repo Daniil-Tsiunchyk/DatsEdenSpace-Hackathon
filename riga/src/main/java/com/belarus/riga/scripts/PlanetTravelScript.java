@@ -1,14 +1,28 @@
 package com.belarus.riga.scripts;
 
 
-import com.belarus.riga.classes.PathInfo;
-import com.belarus.riga.classes.PlanetTravel;
-import com.belarus.riga.classes.PlayerUniverseResponse;
+import com.belarus.riga.classes.*;
 import com.belarus.riga.client.UniverseClient;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class PlanetTravelScript {
+
+
+    public static List<PlanetTravel> mapData(List<List<Object>> universe) {
+        List<PlanetTravel> result = new ArrayList<>();
+        for (List<Object> travel : universe) {
+            String departurePlanet = (String) travel.get(0);
+            String landingPlanet = (String) travel.get(1);
+            int fuel = (int) travel.get(2);
+            result.add(new PlanetTravel(departurePlanet, landingPlanet, fuel));
+        }
+        return result;
+    }
 
     public static PathInfo findShortestPath(List<PlanetTravel> travels, String start, String end) {
         Map<String, Map<String, Integer>> graph = buildGraph(travels);
@@ -48,7 +62,6 @@ public class PlanetTravelScript {
         }
         return new PathInfo(distances.get(end), paths.getOrDefault(end, Collections.emptyList()));
     }
-
     private static Map<String, Map<String, Integer>> buildGraph(List<PlanetTravel> travels) {
         Map<String, Map<String, Integer>> graph = new HashMap<>();
         for (PlanetTravel travel : travels) {
@@ -57,7 +70,6 @@ public class PlanetTravelScript {
         }
         return graph;
     }
-
     public static void main(String[] args) {
         List<PlanetTravel> travels = new ArrayList<>();
         PlayerUniverseResponse response = new PlayerUniverseResponse();
@@ -88,17 +100,69 @@ public class PlanetTravelScript {
         for (PlanetTravel travel : shortestPathInfo.getPath()) {
             System.out.println(travel);
         }
-        List<String> result = shortestPathInfoString(travels, start, end);
+        String result = shortestPathInfoString(travels, start, end);
+    }
+    public static String shortestPathInfoString(List<PlanetTravel> travels,String start, String end)  {
+        PathInfo shortestPathInfo = findShortestPath(travels, start, end);
+
+        return mapData(shortestPathInfo);
+    }
+    public static String mapData(PathInfo shortestPathInfo) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<String> planetsRequest = shortestPathInfo.getPath()
+                .stream()
+                .map(PlanetTravel::getLandingPlanet)
+                .collect(Collectors.toList());
+
+        PlanetListRequest planetList = new PlanetListRequest(planetsRequest);
+
+        try {
+            String resultString = objectMapper.writeValueAsString(planetList);
+            System.out.println("========");
+            System.out.println(resultString);
+            return resultString;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public static List<String> shortestPathInfoString(List<PlanetTravel> travels, String start, String end) {
-        PathInfo shortestPathInfo = findShortestPath(travels, start, end);
-        List<String> resultString = new ArrayList<>();
-        for (PlanetTravel travel : shortestPathInfo.getPath()) {
-            resultString.add(travel.getLandingPlanet());
+    public static List<PlanetFlagInfo> convertToFlagInfoList(List<PlanetTravel> planetTravels) {
+        Map<String, Boolean> planetFlags = new HashMap<>();
+
+        for (PlanetTravel travel : planetTravels) {
+            String departurePlanet = travel.getDeparturePlanet();
+            String landingPlanet = travel.getLandingPlanet();
+            if (!planetFlags.containsKey(departurePlanet)) {
+                planetFlags.put(departurePlanet, false);
+            }
+            if (!planetFlags.containsKey(landingPlanet)) {
+                planetFlags.put(landingPlanet, false);
+            }
         }
-        System.out.println("========");
-        System.out.println(resultString);
-        return resultString;
+        planetFlags.remove("Earth");
+        planetFlags.remove("Eden");
+
+        List<PlanetFlagInfo> flagInfoList = new ArrayList<>();
+        for (Map.Entry<String, Boolean> entry : planetFlags.entrySet()) {
+            flagInfoList.add(new PlanetFlagInfo(entry.getKey(), entry.getValue()));
+        }
+
+        return flagInfoList;
     }
+
+    public static List<PlanetFlagInfo> findClosestPlanet(List<PlanetFlagInfo> planetFlagInfoList,List<PlanetTravel> travels,
+                                                         String namePlanet){
+        List<PlanetFlagInfo> closestPlanetsList = new ArrayList<>();
+        for (PlanetFlagInfo planet :
+                planetFlagInfoList) {
+            if(!planet.isClear()){
+                planet.setFuel( findShortestPath(travels, namePlanet, planet.getNamePlanet()).getTotalFuel());
+                closestPlanetsList.add(planet);
+            }
+        }
+        return closestPlanetsList.stream()
+                .sorted(Comparator.comparingInt(PlanetFlagInfo::getFuel))
+                .collect(Collectors.toList());
+    }
+
 }
