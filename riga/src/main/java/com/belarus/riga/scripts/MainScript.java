@@ -29,7 +29,7 @@ public class MainScript {
         String jsonPayload;
         while (true) {
             System.out.println("-------------------------------------");
-            System.out.println("error counter "+errorCount);
+
             try {
                 response = universeClient.getPlayerUniverse();
                 System.out.println(response);
@@ -50,6 +50,9 @@ public class MainScript {
             if (sortedClosestPlanet.isEmpty()) {
                 System.out.println("Все планеты очищены");
                 break;
+            }
+            else{
+                System.out.println("Количество планет осталось: " + sortedClosestPlanet.size());
             }
 
             Integer[][] shipGarbage = parseShipGarbage(response.getShip());
@@ -77,9 +80,7 @@ public class MainScript {
                         }
 
                     }
-                    else{
-                        markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), true);
-                    }
+
                 } catch (Exception e) {
                     errorCount++;
                     markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), false);
@@ -87,10 +88,6 @@ public class MainScript {
                 }
                 //todo Тетрис
             } else {
-
-                if (response.getShip().getPlanet().getGarbage().isEmpty()) {
-                    markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), true);
-                }
                 jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), DEFAULT_PLANET);
             }
 
