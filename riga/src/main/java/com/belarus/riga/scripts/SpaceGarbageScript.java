@@ -85,7 +85,7 @@ public class SpaceGarbageScript {
                         int newX = x + block.get(0);
                         int newY = y + block.get(1);
                         shipGarbage[newY][newX] = 1;
-                        newCoordinates.add(Arrays.asList(newY, newX));
+                        newCoordinates.add(Arrays.asList(newX, newY));
                     }
                     return true;
                 }

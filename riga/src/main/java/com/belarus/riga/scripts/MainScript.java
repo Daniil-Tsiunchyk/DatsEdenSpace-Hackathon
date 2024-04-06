@@ -14,7 +14,7 @@ import static com.belarus.riga.scripts.SpaceGarbageScript.*;
 
 public class MainScript {
     private static final String DEFAULT_PLANET = "Eden";
-    private static final double CAPACITY_THRESHOLD = 0.7;
+    private static final double CAPACITY_THRESHOLD = 0.35;
     private static final UniverseClient universeClient = new UniverseClient();
     private static final TravelClient travelClient = new TravelClient();
 
@@ -49,7 +49,8 @@ public class MainScript {
 
             Integer[][] shipGarbage = parseShipGarbage(response.getShip());
             int capacity = countCapacity(shipGarbage);
-
+            System.out.println(capacity);
+            System.out.println(response.getShip().getCapacityY() * response.getShip().getCapacityX() * CAPACITY_THRESHOLD);
             String jsonPayload;
             if (capacity <= (response.getShip().getCapacityY() * response.getShip().getCapacityX() * CAPACITY_THRESHOLD)) {
 
@@ -57,7 +58,9 @@ public class MainScript {
 
                 //todo Тетрис
                 try {
-                    manageGarbage();
+                    if (!response.getShip().getPlanet().getGarbage().isEmpty()) {
+                        manageGarbage();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
