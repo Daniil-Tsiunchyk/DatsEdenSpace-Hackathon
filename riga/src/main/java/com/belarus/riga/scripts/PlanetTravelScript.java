@@ -101,29 +101,29 @@ public class PlanetTravelScript {
     }
 
     public static List<PlanetFlagInfo> convertToFlagInfoList(List<PlanetTravel> planetTravels) {
-        Map<String, Boolean> planetFlags = getPlanetFlags(planetTravels);
+        Map<String, Integer> planetFlags = getPlanetFlags(planetTravels);
         planetFlags.remove("Earth");
         planetFlags.remove("Eden");
 
         List<PlanetFlagInfo> flagInfoList = new ArrayList<>();
-        for (Map.Entry<String, Boolean> entry : planetFlags.entrySet()) {
-            flagInfoList.add(new PlanetFlagInfo(entry.getKey(), entry.getValue()));
+        for (Map.Entry<String, Integer> entry : planetFlags.entrySet()) {
+            flagInfoList.add(new PlanetFlagInfo(entry.getKey(), 0));
         }
 
         return flagInfoList;
     }
 
-    private static Map<String, Boolean> getPlanetFlags(List<PlanetTravel> planetTravels) {
-        Map<String, Boolean> planetFlags = new HashMap<>();
+    private static Map<String, Integer> getPlanetFlags(List<PlanetTravel> planetTravels) {
+        Map<String, Integer> planetFlags = new HashMap<>();
 
         for (PlanetTravel travel : planetTravels) {
             String departurePlanet = travel.getDeparturePlanet();
             String landingPlanet = travel.getLandingPlanet();
             if (!planetFlags.containsKey(departurePlanet)) {
-                planetFlags.put(departurePlanet, false);
+                planetFlags.put(departurePlanet, 0);
             }
             if (!planetFlags.containsKey(landingPlanet)) {
-                planetFlags.put(landingPlanet, false);
+                planetFlags.put(landingPlanet, 0);
             }
         }
         return planetFlags;
@@ -134,7 +134,7 @@ public class PlanetTravelScript {
         List<PlanetFlagInfo> closestPlanetsList = new ArrayList<>();
         for (PlanetFlagInfo planet :
                 planetFlagInfoList) {
-            if (!planet.isClear() && !planet.getNamePlanet().equals(namePlanet)) {
+            if (planet.getIsClear()!=3 && !planet.getNamePlanet().equals(namePlanet)) {
                 planet.setFuel(findShortestPath(travels, namePlanet, planet.getNamePlanet()).getTotalFuel());
                 closestPlanetsList.add(planet);
             }
