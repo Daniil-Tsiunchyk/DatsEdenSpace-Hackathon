@@ -21,11 +21,8 @@ public class MainScript {
         try {
             response = client.getPlayerUniverse();
             System.out.println(response);
-            try {
-                Thread.sleep(250);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            Thread.sleep(250);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -36,11 +33,8 @@ public class MainScript {
             try {
                 response = client.getPlayerUniverse();
                 System.out.println(response);
-                try {
-                    Thread.sleep(250);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Thread.sleep(250);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -52,7 +46,7 @@ public class MainScript {
                     }
                 }
             }
-            //todo Заменить Earth на реальное
+
             travels = PlanetTravelScript.mapData(response.getUniverse());
 
             List<PlanetFlagInfo> sortedClosestPlanet = PlanetTravelScript.findClosestPlanet(planetFlagInfoList,travels,response.getShip().getPlanet().getName());
@@ -68,11 +62,8 @@ public class MainScript {
                 //todo Затестить
                 try {
                     travelClient.postTravel(jsonPayload);
-                    try {
-                        Thread.sleep(250);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    Thread.sleep(250);
+
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -80,18 +71,12 @@ public class MainScript {
                 //todo Тетрис
                 //
                 //todo Тетрис
-
-                //todo Оставить флаг или нет
             }
             else {
                 String jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(),"Eden" );
                 try {
                     travelClient.postTravel(jsonPayload);
-                    try {
-                        Thread.sleep(250);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    Thread.sleep(250);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
