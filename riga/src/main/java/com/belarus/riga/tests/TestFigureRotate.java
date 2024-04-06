@@ -1,34 +1,15 @@
-package com.belarus.riga.legacy;
+package com.belarus.riga.tests;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class Tests {
+import static com.belarus.riga.scripts.SpaceGarbageScript.rotateFigure;
 
-    public static List<List<Integer>> rotateFigure(List<List<Integer>> figure, int angle) {
-        List<List<Integer>> rotatedFigure = new ArrayList<>();
-        for (List<Integer> block : figure) {
-            int x = block.get(0);
-            int y = block.get(1);
-            List<Integer> rotatedBlock = switch (angle) {
-                case 90 -> Arrays.asList(y, -x);
-                case 180 -> Arrays.asList(-x, -y);
-                case 270 -> Arrays.asList(-y, x);
-                default -> Arrays.asList(x, y);
-            };
-            rotatedFigure.add(rotatedBlock);
-        }
-        return normalizeFigure(rotatedFigure);
-    }
 
-    private static List<List<Integer>> normalizeFigure(List<List<Integer>> figure) {
-        int minX = figure.stream().min(Comparator.comparingInt(List::getFirst)).get().getFirst();
-        int minY = figure.stream().min(Comparator.comparingInt(block -> block.get(1))).get().get(1);
-        return figure.stream().map(block -> Arrays.asList(block.getFirst() - minX, block.get(1) - minY)).collect(Collectors.toList());
-    }
+public class TestFigureRotate {
+
 
     private static void printFigure(List<List<Integer>> figure) {
         int width = figure.stream().max(Comparator.comparingInt(List::getFirst)).get().getFirst() + 1;
@@ -46,10 +27,9 @@ public class Tests {
         System.out.println();
     }
 
-    // Тестовая функция для проверки поворотов
     private static void testRotation(List<List<Integer>> figure, int angle) {
-        //     System.out.println("Original Figure:");
-        //   printFigure(figure);
+        System.out.println("Original Figure:");
+        printFigure(figure);
 
         List<List<Integer>> rotatedFigure = rotateFigure(figure, angle);
         System.out.println("Figure after " + angle + " degree rotation:");
@@ -57,12 +37,15 @@ public class Tests {
     }
 
     public static void main(String[] args) {
-        // Пример фигуры (L-образная)
         List<List<Integer>> figure = new ArrayList<>();
+
+        //Example №1
         // figure.add(Arrays.asList(0, 0));
         // figure.add(Arrays.asList(0, 1));
-        //   figure.add(Arrays.asList(0, 2));
-        //   figure.add(Arrays.asList(1, 2));
+        // figure.add(Arrays.asList(0, 2));
+        // figure.add(Arrays.asList(1, 2));
+
+        //Example №2
         figure.add(Arrays.asList(0, 3));
         figure.add(Arrays.asList(0, 2));
         figure.add(Arrays.asList(0, 1));

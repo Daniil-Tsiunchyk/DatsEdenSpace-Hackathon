@@ -1,6 +1,5 @@
 package com.belarus.riga.client;
 
-import com.belarus.riga.classes.PlayerCollectResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -14,9 +13,9 @@ public class TetrisClient {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public PlayerCollectResponse collectGarbage(Map<String, List<List<Integer>>> garbageData) throws IOException {
+    public void collectGarbage(Map<String, List<List<Integer>>> garbageData) throws IOException {
         String jsonPayload = objectMapper.writeValueAsString(Collections.singletonMap("garbage", garbageData));
-        String jsonResponse = sendPost("player/collect", jsonPayload);
-        return objectMapper.readValue(jsonResponse, PlayerCollectResponse.class);
+        sendPost("player/collect", jsonPayload);
+        // return objectMapper.readValue(jsonResponse, PlayerCollectResponse.class);
     }
 }
