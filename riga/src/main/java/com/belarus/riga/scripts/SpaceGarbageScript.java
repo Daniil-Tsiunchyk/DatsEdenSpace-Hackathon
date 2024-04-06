@@ -54,11 +54,12 @@ public class SpaceGarbageScript {
 
         Integer[][] shipGarbage = parseShipGarbage(response.getShip());
         print2DArray(shipGarbage);
-
+        System.out.println();
         List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage = sortPlanetGarbage(response.getShip().getPlanet().getGarbage());
 
         Map<String, List<List<Integer>>> garbageToLoad = loadGarbage(shipGarbage, sortedPlanetGarbage);
-        if(isValidGarbageLoad(shipGarbage, garbageToLoad, sortedPlanetGarbage.size() == 1)) {
+        printGarbageDetails(garbageToLoad);
+        if (isValidGarbageLoad(shipGarbage, garbageToLoad, sortedPlanetGarbage.size() == 1)) {
             print2DArray(shipGarbage);
             tetrisClient.collectGarbage(garbageToLoad);
         }
@@ -113,7 +114,7 @@ public class SpaceGarbageScript {
     private static void backtrack(Integer[][] shipGarbage, List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage, int position,
                                   Map<String, List<List<Integer>>> currentCombination,
                                   Map<String, List<List<Integer>>> bestCombination) {
-        // Если текущая комбинация лучше, чем лучшая найденная до этого, сохраните ее
+        // Если текущая комбинация лучше, чем лучшая найденная до этого, сохраняем её
         if (countCombinationCapacity(currentCombination) > countCombinationCapacity(bestCombination)) {
             bestCombination.clear();
             bestCombination.putAll(currentCombination);
@@ -126,13 +127,13 @@ public class SpaceGarbageScript {
             List<List<Integer>> figure = garbageEntry.getValue();
             List<List<Integer>> newCoordinates = placeFigure(shipGarbage, figure);
 
-            // Если фигура поместилась в трюм, добавьте ее в текущую комбинацию и продолжите поиск
+            // Если фигура поместилась в трюм, добавляем её в текущую комбинацию и продолжаем поиск
             if (!newCoordinates.isEmpty()) {
                 currentCombination.put(garbageID, newCoordinates);
                 backtrack(shipGarbage, sortedPlanetGarbage, i + 1, currentCombination, bestCombination);
                 currentCombination.remove(garbageID);
 
-                // Удалите фигуру из трюма после просмотра всех возможных комбинаций с ней
+                // Удаляем фигуру из трюма после просмотра всех возможных комбинаций с ней
                 for (List<Integer> block : figure) {
                     int x = block.get(0);
                     int y = block.get(1);
@@ -159,11 +160,26 @@ public class SpaceGarbageScript {
     public static void print2DArray(Integer[][] array) {
         for (Integer[] row : array) {
             for (Integer item : row) {
-                System.out.print(item + " ");
+                System.out.print(item == 1 ? "█" : " ");
+                System.out.print(" ");
             }
             System.out.println();
         }
         System.out.println();
+    }
+
+    public static void printGarbageDetails(Map<String, List<List<Integer>>> garbage) {
+        for (Map.Entry<String, List<List<Integer>>> garbageEntry : garbage.entrySet()) {
+            String garbageID = garbageEntry.getKey();
+            List<List<Integer>> coordinates = garbageEntry.getValue();
+
+            System.out.println("Garbage ID: " + garbageID);
+            System.out.println("Coordinates:");
+            for (List<Integer> coordinate : coordinates) {
+                System.out.println("X: " + coordinate.get(0) + " Y: " + coordinate.get(1));
+            }
+            System.out.println();
+        }
     }
 
     public static List<List<Integer>> rotateFigure(List<List<Integer>> figure, int angle) {
