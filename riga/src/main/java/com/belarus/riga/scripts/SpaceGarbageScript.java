@@ -47,18 +47,16 @@ public class SpaceGarbageScript {
         TetrisClient tetrisClient = new TetrisClient();
         PlayerUniverseResponse response = universeClient.getPlayerUniverse();
 
+        if (response.getShip().getPlanet().getGarbage().isEmpty()) {
+            return false;
+        }
+
         Integer[][] shipGarbage = parseShipGarbage(response.getShip());
         print2DArray(shipGarbage);
 
         List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage = sortPlanetGarbage(response.getShip().getPlanet().getGarbage());
 
-        if (sortedPlanetGarbage.isEmpty()) return true;
-
         Map<String, List<List<Integer>>> garbageToLoad = loadGarbage(shipGarbage, sortedPlanetGarbage);
-
-        // if (garbageToLoad.isEmpty()) {
-        // return false;
-        // }
 
         tetrisClient.collectGarbage(garbageToLoad);
         return true;
