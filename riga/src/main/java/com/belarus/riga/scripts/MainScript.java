@@ -35,8 +35,6 @@ public class MainScript {
 
                     try {
                         response = universeClient.getPlayerUniverse();
-                        System.out.println(response);
-                        Thread.sleep(300);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -104,10 +102,7 @@ public class MainScript {
 
     private static PlayerUniverseResponse getPlayerUniverse() {
         try {
-            PlayerUniverseResponse response = MainScript.universeClient.getPlayerUniverse();
-            System.out.println(response);
-            Thread.sleep(250);
-            return response;
+            return MainScript.universeClient.getPlayerUniverse();
         } catch (Exception e) {
             throw new RuntimeException("Failed to get player universe", e);
         }
@@ -126,7 +121,6 @@ public class MainScript {
     private static void postTravel(String jsonPayload) {
         try {
             MainScript.travelClient.postTravel(jsonPayload);
-            Thread.sleep(250);
         } catch (Exception e) {
             throw new RuntimeException("Failed to post travel", e);
         }
