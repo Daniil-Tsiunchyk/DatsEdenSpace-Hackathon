@@ -6,7 +6,7 @@ import lombok.Data;
 public class PlanetFlagInfo {
     private String namePlanet;
     private int isClear;
-    public int fuel=0;
+    public int fuel = 0;
 
     public PlanetFlagInfo(String namePlanet, int isClear) {
         this.namePlanet = namePlanet;

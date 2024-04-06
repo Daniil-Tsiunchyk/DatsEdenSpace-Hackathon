@@ -134,7 +134,7 @@ public class PlanetTravelScript {
         List<PlanetFlagInfo> closestPlanetsList = new ArrayList<>();
         for (PlanetFlagInfo planet :
                 planetFlagInfoList) {
-            if (planet.getIsClear()!=3 && !planet.getNamePlanet().equals(namePlanet)) {
+            if (planet.getIsClear() != 3 && !planet.getNamePlanet().equals(namePlanet)) {
                 planet.setFuel(findShortestPath(travels, namePlanet, planet.getNamePlanet()).getTotalFuel());
                 closestPlanetsList.add(planet);
             }
