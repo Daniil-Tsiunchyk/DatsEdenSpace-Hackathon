@@ -66,29 +66,25 @@ public class MainScript {
                 jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), getClosestPlanet(sortedClosestPlanet).getNamePlanet());
 
 
-                //todo Тетрис
                 try {
-                    System.out.println("Мы делаем тетрис");
-                    if (!manageGarbage()) {
+                    if (!manageGarbage() && !response.getShip().getPlanet().getGarbage().isEmpty()) {
                         errorCount++;
                         markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 1);
                     } else {
                         errorCount = 0;
-                        System.out.println("planet is clear");
                         if (response.getShip().getPlanet().getGarbage().isEmpty()) {
+                            System.out.println("planet is clear");
                             markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 3);
                         } else {
+                            System.out.println("planet is not clear");
                             markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 0);
                         }
                     }
-
-
                 } catch (Exception e) {
                     errorCount++;
                     markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 1);
                     e.printStackTrace();
                 }
-                //todo Тетрис
             } else {
                 jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), DEFAULT_PLANET);
             }
