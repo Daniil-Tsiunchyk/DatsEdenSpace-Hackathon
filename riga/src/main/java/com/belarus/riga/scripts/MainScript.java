@@ -84,11 +84,11 @@ public class MainScript {
                         errorCount++;
                         System.out.println(anotherResponse.getShip().getPlanet().getGarbage());
                         System.out.println("planet is 1 clear");
-                        markPlanet(planetFlagInfoList, anotherResponse.getShip().getPlanet().getName(), 3);
+                        markPlanet(planetFlagInfoList, anotherResponse.getShip().getPlanet().getName(), 1);
                     }
                 } catch (Exception e) {
                     errorCount++;
-                    markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 3);
+                    markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 1);
                     e.printStackTrace();
                 }
             } else {
