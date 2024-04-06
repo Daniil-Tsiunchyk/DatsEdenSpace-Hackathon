@@ -5,10 +5,10 @@ import lombok.Data;
 @Data
 public class PlanetFlagInfo {
     private String namePlanet;
-    private boolean isClear;
-    public int fuel;
+    private int isClear;
+    public int fuel=0;
 
-    public PlanetFlagInfo(String namePlanet, boolean isClear) {
+    public PlanetFlagInfo(String namePlanet, int isClear) {
         this.namePlanet = namePlanet;
         this.isClear = isClear;
     }

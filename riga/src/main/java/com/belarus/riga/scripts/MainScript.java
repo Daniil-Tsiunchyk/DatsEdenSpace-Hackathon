@@ -32,9 +32,9 @@ public class MainScript {
                     System.out.println("-------------------------------------");
 
                     try {
-
-                        response = universeClient.getPlayerUniverse();
                         Thread.sleep(250);
+                        response = universeClient.getPlayerUniverse();
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -47,6 +47,7 @@ public class MainScript {
                     }
 
                     travels = PlanetTravelScript.mapData(response.getUniverse());
+                    System.out.println("size "+planetFlagInfoList.size());
                     List<PlanetFlagInfo> sortedClosestPlanet = PlanetTravelScript.findClosestPlanet(planetFlagInfoList, travels, response.getShip().getPlanet().getName());
                     if (sortedClosestPlanet.isEmpty()) {
                         System.out.println("Все планеты очищены");
@@ -62,33 +63,41 @@ public class MainScript {
 
                     if (capacity <= (response.getShip().getCapacityY() * response.getShip().getCapacityX() * CAPACITY_THRESHOLD)) {
 
-                        jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), sortedClosestPlanet.getFirst().getNamePlanet());
+                        jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(),getClosestPlanet(sortedClosestPlanet).getNamePlanet());
+
 
                         //todo Тетрис
                         try {
                             System.out.println("Мы делаем тетрис");
                             if (!manageGarbage()) {
                                 errorCount++;
-                                markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), false);
+                                markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 1);
                             } else {
                                 errorCount = 0;
                                 System.out.println("planet is clear");
                                 if (response.getShip().getPlanet().getGarbage().isEmpty()) {
-                                    markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), true);
+                                    markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 3);
+                                }
+                                else{
+                                    markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 0);
                                 }
                             }
 
 
                         } catch (Exception e) {
                             errorCount++;
-                            markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), false);
+                            markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 1);
                             e.printStackTrace();
                         }
                         //todo Тетрис
                     } else {
                         jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), DEFAULT_PLANET);
                     }
-
+                    try {
+                        Thread.sleep(250);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                     postTravel(jsonPayload);
                     System.out.println("-------------------------------------");
                 }
@@ -102,11 +111,24 @@ public class MainScript {
             throw new RuntimeException("Failed to get player universe", e);
         }
     }
+    public static PlanetFlagInfo getClosestPlanet(List<PlanetFlagInfo> sortedClosestPlanet) {
+        for (PlanetFlagInfo planet : sortedClosestPlanet) {
+            if (planet.getIsClear() == 0 ) {
+                return planet;
+            }
+        }
+        for (PlanetFlagInfo planet : sortedClosestPlanet) {
+            if (planet.getIsClear() == 1 ) {
+                return planet;
+            }
+        }
+        return null;
+    }
 
-    private static void markPlanet(List<PlanetFlagInfo> planetFlagInfoList, String planetName, boolean flag) {
+    private static void markPlanet(List<PlanetFlagInfo> planetFlagInfoList, String planetName, int flag) {
         for (PlanetFlagInfo planetFlagInfo : planetFlagInfoList) {
             if (planetFlagInfo.getNamePlanet().equals(planetName)) {
-                planetFlagInfo.setClear(flag);
+                planetFlagInfo.setIsClear(flag);
                 System.out.println("Планета " + planetName + " значение: " + flag);
                 break;
             }
