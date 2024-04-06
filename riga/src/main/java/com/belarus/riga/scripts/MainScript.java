@@ -20,8 +20,8 @@ public class MainScript {
 
     public static void main(String[] args) {
         while (true) {
-            try {
 
+            try {
                 List<PlanetTravel> travels;
                 List<PlanetFlagInfo> planetFlagInfoList;
 
@@ -31,6 +31,8 @@ public class MainScript {
                 int errorCount = 0;
                 String jsonPayload;
                 while (true) {
+                    Thread.sleep(300);
+
                     System.out.println("-------------------------------------");
 
                     try {
@@ -64,14 +66,13 @@ public class MainScript {
 
                         jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), sortedClosestPlanet.getFirst().getNamePlanet());
 
-                        //todo Тетрис
                         try {
                             if (!response.getShip().getPlanet().getGarbage().isEmpty()) {
-                                System.out.println("Мы делаем тетрис");
                                 if (!manageGarbage()) {
                                     errorCount++;
                                     markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), false);
                                 } else {
+
                                     errorCount = 0;
                                     System.out.println("planet is clear");
                                     if (response.getShip().getPlanet().getGarbage().isEmpty()) {
