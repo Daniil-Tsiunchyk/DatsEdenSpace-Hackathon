@@ -1,22 +1,23 @@
 package com.belarus.riga.scripts;
 
+import com.belarus.riga.classes.PlayerCollectResponse;
 import com.belarus.riga.classes.PlayerUniverseResponse;
 import com.belarus.riga.classes.PlayerUniverseResponse.Ship;
+import com.belarus.riga.client.TetrisClient;
 import com.belarus.riga.client.UniverseClient;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SpaceGarbageScript {
 
-    public static int[][] parseShipGarbage(Ship ship) {
-        int[][] cargoSpace = new int[ship.getCapacityY()][ship.getCapacityX()];
+    public static Integer[][] parseShipGarbage(Ship ship) {
+        Integer[][] cargoSpace = new Integer[ship.getCapacityY()][ship.getCapacityX()];
 
         for (Map.Entry<String, List<List<Integer>>> entry : ship.getGarbage().entrySet()) {
             for (List<Integer> coordinates : entry.getValue()) {
-                int x = coordinates.get(0);
-                int y = coordinates.get(1);
+                Integer x = coordinates.get(0);
+                Integer y = coordinates.get(1);
                 cargoSpace[y][x] = 1;
             }
         }
@@ -30,32 +31,155 @@ public class SpaceGarbageScript {
         return sortedGarbage;
     }
 
-    // Это основной метод, который нам нужно будет дополнить для выполнения шагов 3 и 4
     public static void manageGarbage() throws Exception {
         UniverseClient universeClient = new UniverseClient();
+        TetrisClient tetrisClient = new TetrisClient();
         PlayerUniverseResponse response = universeClient.getPlayerUniverse();
 
         // Шаг 1: Парсим текущий garbage
-        int[][] shipGarbage = parseShipGarbage(response.getShip());
+        Integer[][] shipGarbage = parseShipGarbage(response.getShip());
         printCargoSpace(shipGarbage);
 
         // Шаг 2: Сортируем garbage с планеты
         List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage = sortPlanetGarbage(response.getShip().getPlanet().getGarbage());
         System.out.println(sortedPlanetGarbage);
-        // TODO: Шаги 3 и 4 - Загрузка объектов в garbage и отправка запросов на сервер
+
+        // Шаг 3: Загрузка объектов в garbage
+        Map<String, List<List<Integer>>> garbageToLoad = loadGarbage(shipGarbage, sortedPlanetGarbage);
+
+        // Шаг 4: Отправка запросов на сервер
+        PlayerCollectResponse collectResponse = tetrisClient.collectGarbage(garbageToLoad);
+        System.out.println("Response from server: " + collectResponse);
     }
 
-    // Вспомогательный метод для вывода массива грузового пространства
-    public static void printCargoSpace(int[][] cargoSpace) {
-        for (int[] row : cargoSpace) {
-            for (int cell : row) {
+    public static void printCargoSpace(Integer[][] cargoSpace) {
+        for (Integer[] row : cargoSpace) {
+            for (Integer cell : row) {
                 System.out.print(cell + " ");
             }
             System.out.println();
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        manageGarbage();
+    private static boolean tryToFitFigure(Integer[][] shipGarbage, List<List<Integer>> figure, int startX, int startY) {
+        for (List<Integer> block : figure) {
+            int x = startX + block.get(0);
+            int y = startY + block.get(1);
+            if (y >= shipGarbage.length || x >= shipGarbage[y].length || shipGarbage[y][x] != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean findSpaceForFigure(Integer[][] shipGarbage, List<List<Integer>> figure, List<List<Integer>> newCoordinates) {
+        for (int y = 0; y < shipGarbage.length; y++) {
+            for (int x = 0; x < shipGarbage[y].length; x++) {
+                if (tryToFitFigure(shipGarbage, figure, x, y)) {
+                    for (List<Integer> block : figure) {
+                        int newX = x + block.get(0);
+                        int newY = y + block.get(1);
+                        shipGarbage[newY][newX] = 1;
+                        newCoordinates.add(Arrays.asList(newY, newX));
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean canPlaceFigure(Integer[][] shipGarbage, List<List<Integer>> figure) {
+        for (int angle : new int[]{0, 90, 180, 270}) {
+            List<List<Integer>> rotatedFigure = rotateFigure(figure, angle);
+            List<List<Integer>> dummyCoordinates = new ArrayList<>();
+            if (findSpaceForFigure(shipGarbage, rotatedFigure, dummyCoordinates)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static List<List<Integer>> placeFigure(Integer[][] shipGarbage, List<List<Integer>> figure) {
+        for (int angle : new int[]{0, 90, 180, 270}) {
+            List<List<Integer>> rotatedFigure = rotateFigure(figure, angle);
+            List<List<Integer>> newCoordinates = new ArrayList<>();
+            if (findSpaceForFigure(shipGarbage, rotatedFigure, newCoordinates)) {
+                return newCoordinates;
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    public static Map<String, List<List<Integer>>> loadGarbage(Integer[][] shipGarbage, List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage) {
+        Map<String, List<List<Integer>>> loadedGarbage = new HashMap<>();
+
+        for (Map.Entry<String, List<List<Integer>>> garbageEntry : sortedPlanetGarbage) {
+            String garbageID = garbageEntry.getKey();
+            List<List<Integer>> figure = garbageEntry.getValue();
+
+            if (canPlaceFigure(shipGarbage, figure)) {
+                List<List<Integer>> newCoordinates = placeFigure(shipGarbage, figure);
+                loadedGarbage.put(garbageID, newCoordinates);
+            }
+        }
+
+        return loadedGarbage;
+    }
+
+    public static void initializeCargoSpace(Integer[][] cargoSpace) {
+        for (Integer[] integers : cargoSpace) {
+            Arrays.fill(integers, 0);
+        }
+    }
+
+    public static void print2DArray(Integer[][] array) {
+        for (Integer[] row : array) {
+            for (Integer item : row) {
+                System.out.print(item + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    private static List<List<Integer>> rotateFigure(List<List<Integer>> figure, int angle) {
+        List<List<Integer>> rotatedFigure = new ArrayList<>();
+        for (List<Integer> block : figure) {
+            int x = block.get(0);
+            int y = block.get(1);
+            List<Integer> rotatedBlock = switch (angle) {
+                case 90 -> Arrays.asList(y, -x);
+                case 180 -> Arrays.asList(-x, -y);
+                case 270 -> Arrays.asList(-y, x);
+                default -> Arrays.asList(x, y);
+            };
+            rotatedFigure.add(rotatedBlock);
+        }
+        return normalizeFigure(rotatedFigure);
+    }
+
+    private static List<List<Integer>> normalizeFigure(List<List<Integer>> figure) {
+        int minX = figure.stream().min(Comparator.comparingInt(block -> block.get(0))).get().get(0);
+        int minY = figure.stream().min(Comparator.comparingInt(block -> block.get(1))).get().get(1);
+        return figure.stream().map(block -> Arrays.asList(block.get(0) - minX, block.get(1) - minY)).collect(Collectors.toList());
+    }
+
+    public static void main(String[] args) {
+        Integer[][] shipGarbage = new Integer[11][8];
+        initializeCargoSpace(shipGarbage);
+        System.out.println("Initial shipGarbage:");
+        print2DArray(shipGarbage);
+
+        List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage = new ArrayList<>();
+        sortedPlanetGarbage.add(Map.entry("6fSWkmU", List.of(List.of(0, 3), List.of(0, 2), List.of(0, 1), List.of(0, 0), List.of(1, 3), List.of(1, 0), List.of(2, 3), List.of(2, 2), List.of(2, 1), List.of(2, 0), List.of(3, 1))));
+        sortedPlanetGarbage.add(Map.entry("6tjTLHP", List.of(List.of(0, 3), List.of(0, 2), List.of(0, 1), List.of(0, 0), List.of(1, 3), List.of(2, 3), List.of(2, 2), List.of(2, 1), List.of(2, 0), List.of(3, 2), List.of(3, 0))));
+
+        Map<String, List<List<Integer>>> loadedGarbage = loadGarbage(shipGarbage, sortedPlanetGarbage);
+        for (String id : loadedGarbage.keySet()) {
+            System.out.println("Loaded garbage ID: " + id + " with new coordinates: " + loadedGarbage.get(id));
+        }
+
+        System.out.println("Initialized shipGarbage:");
+        print2DArray(shipGarbage);
     }
 }
