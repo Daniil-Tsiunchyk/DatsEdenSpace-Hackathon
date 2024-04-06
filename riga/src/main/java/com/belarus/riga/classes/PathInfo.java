@@ -8,6 +8,6 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class PathInfo {
-    private int totalFuel;
+    private Integer totalFuel;
     private List<PlanetTravel> path;
 }

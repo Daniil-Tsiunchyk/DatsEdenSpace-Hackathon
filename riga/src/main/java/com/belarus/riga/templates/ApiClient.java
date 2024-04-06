@@ -15,7 +15,6 @@ public class ApiClient {
     private static final String X_AUTH_TOKEN = "660e963e5bc03660e963e5bc06";
     private static final String CONTENT_TYPE = "Content-type";
     private static final String APPLICATION_JSON = "application/json";
-    private static final String UNEXPECTED_STATUS = "Unexpected response status: ";
 
     public static String sendGet(String endpoint) throws IOException {
         HttpGet request = new HttpGet(BASE_URL + endpoint);
@@ -50,10 +49,11 @@ public class ApiClient {
         String result = EntityUtils.toString(entity);
         EntityUtils.consume(entity);
 
-        if (status >= 200 && status < 300) {
+        if (status == 200) {
             return result;
         } else {
-            throw new IOException(UNEXPECTED_STATUS + status + " - " + result);
+            String errorMessage = "HTTP code " + status + " with message: " + result;
+            throw new IOException(errorMessage);
         }
     }
 }
