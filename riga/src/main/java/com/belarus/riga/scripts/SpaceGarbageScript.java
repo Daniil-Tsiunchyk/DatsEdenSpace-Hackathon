@@ -50,15 +50,16 @@ public class SpaceGarbageScript {
         Integer[][] shipGarbage = parseShipGarbage(response.getShip());
         print2DArray(shipGarbage);
 
+
         List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage = sortPlanetGarbage(response.getShip().getPlanet().getGarbage());
 
         if (sortedPlanetGarbage.isEmpty()) return true;
         // Step 3: Load objects into garbage
         Map<String, List<List<Integer>>> garbageToLoad = loadGarbage(shipGarbage, sortedPlanetGarbage);
+        if (garbageToLoad.isEmpty()) {
+            return true;
+        }
 
-        //  if (garbageToLoad.isEmpty()) {
-        //  return false;
-        //  }
 
         tetrisClient.collectGarbage(garbageToLoad);
         Thread.sleep(300);

@@ -66,7 +66,7 @@ public class MainScript {
 
                 //todo Тетрис
                 try {
-                    if (!response.getShip().getPlanet().getGarbage().isEmpty()) {
+
                         System.out.println("Мы делаем тетрис");
                         if (!manageGarbage()) {
                             errorCount++;
@@ -79,7 +79,7 @@ public class MainScript {
                             }
                         }
 
-                    }
+
 
                 } catch (Exception e) {
                     errorCount++;
