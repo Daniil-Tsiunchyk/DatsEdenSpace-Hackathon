@@ -50,6 +50,7 @@ public class SpaceGarbageScript {
         // Шаг 4: Отправка запросов на сервер
         PlayerCollectResponse collectResponse = tetrisClient.collectGarbage(garbageToLoad);
         System.out.println("Response from server: " + collectResponse);
+        Thread.sleep(300);
     }
 
     public static void printCargoSpace(Integer[][] cargoSpace) {

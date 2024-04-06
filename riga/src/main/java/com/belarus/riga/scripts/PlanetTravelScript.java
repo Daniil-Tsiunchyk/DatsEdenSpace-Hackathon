@@ -103,7 +103,15 @@ public class PlanetTravelScript {
         String result = shortestPathInfoString(travels, start, end);
     }
     public static String shortestPathInfoString(List<PlanetTravel> travels,String start, String end)  {
+        if(start.equals(end)){
+            throw new RuntimeException("Мы летим с" + start + " на "+end);
+        }
         PathInfo shortestPathInfo = findShortestPath(travels, start, end);
+        System.out.println("Shortest path fuel: " + shortestPathInfo.getTotalFuel());
+        System.out.println("Path: ");
+        for (PlanetTravel travel : shortestPathInfo.getPath()) {
+            System.out.println(travel);
+        }
 
         return mapData(shortestPathInfo);
     }
@@ -118,8 +126,6 @@ public class PlanetTravelScript {
 
         try {
             String resultString = objectMapper.writeValueAsString(planetList);
-            System.out.println("========");
-            System.out.println(resultString);
             return resultString;
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -155,9 +161,9 @@ public class PlanetTravelScript {
         List<PlanetFlagInfo> closestPlanetsList = new ArrayList<>();
         for (PlanetFlagInfo planet :
                 planetFlagInfoList) {
-            if(!planet.isClear()){
-                planet.setFuel( findShortestPath(travels, namePlanet, planet.getNamePlanet()).getTotalFuel());
-                closestPlanetsList.add(planet);
+            if(!planet.isClear() && !planet.getNamePlanet().equals(namePlanet)){
+                    planet.setFuel( findShortestPath(travels, namePlanet, planet.getNamePlanet()).getTotalFuel());
+                    closestPlanetsList.add(planet);
             }
         }
         return closestPlanetsList.stream()

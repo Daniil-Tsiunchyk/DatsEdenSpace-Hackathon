@@ -9,6 +9,7 @@ import java.util.List;
 
 import static com.belarus.riga.scripts.PlanetTravelScript.*;
 
+
 public class MainScript {
     public static void main(String[] args) {
         List<PlanetTravel> travels;
@@ -21,20 +22,19 @@ public class MainScript {
         try {
             response = client.getPlayerUniverse();
             System.out.println(response);
-            Thread.sleep(250);
+            Thread.sleep(300);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
         travels = PlanetTravelScript.mapData(response.getUniverse());
         planetFlagInfoList = PlanetTravelScript.convertToFlagInfoList(travels);
-
         while(true){
+            System.out.println("-------------------------------------");
             try {
                 response = client.getPlayerUniverse();
                 System.out.println(response);
-                Thread.sleep(250);
-
+                Thread.sleep(300);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -42,14 +42,17 @@ public class MainScript {
                 for (PlanetFlagInfo planetFlagInfo : planetFlagInfoList) {
                     if (planetFlagInfo.getNamePlanet().equals(response.getShip().getPlanet().getName())) {
                         planetFlagInfo.setClear(true);
+                        System.out.println("Мы сюда зашли зачем-то");
                         break;
                     }
                 }
             }
 
             travels = PlanetTravelScript.mapData(response.getUniverse());
-
+            System.out.println("Universe: "+travels);
             List<PlanetFlagInfo> sortedClosestPlanet = PlanetTravelScript.findClosestPlanet(planetFlagInfoList,travels,response.getShip().getPlanet().getName());
+            System.out.println("Количество планет: " + sortedClosestPlanet.size());
+            System.out.println("Отсортированный: "+sortedClosestPlanet);
             if(sortedClosestPlanet.isEmpty()){
                 System.out.println("Все планеты очищены");
                 break;
@@ -57,17 +60,18 @@ public class MainScript {
             //todo Проверка на Copasity
             //
             //todo Проверка на Copasity
-            if(true){
+            if(false){
+
                 String jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), sortedClosestPlanet.getFirst().getNamePlanet());
+
                 //todo Затестить
                 try {
                     travelClient.postTravel(jsonPayload);
-                    Thread.sleep(250);
+                    Thread.sleep(300);
 
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-
                 //todo Тетрис
                 //
                 //todo Тетрис
@@ -76,12 +80,13 @@ public class MainScript {
                 String jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(),"Eden" );
                 try {
                     travelClient.postTravel(jsonPayload);
-                    Thread.sleep(250);
+                    Thread.sleep(300);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
 
             }
+            System.out.println("-------------------------------------");
         }
 
     }
