@@ -52,13 +52,21 @@ public class SpaceGarbageScript {
             return false;
         }
 
+
         Integer[][] shipGarbage = parseShipGarbage(response.getShip());
         print2DArray(shipGarbage);
+
+        Integer[][] shipGarbageCopy = copyArray(shipGarbage);
+
+
         System.out.println();
         List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage = sortPlanetGarbage(response.getShip().getPlanet().getGarbage());
 
         Map<String, List<List<Integer>>> garbageToLoad = loadGarbage(shipGarbage, sortedPlanetGarbage);
-        printGarbageDetails(garbageToLoad);
+        printArrayWithNewGarbage(shipGarbageCopy, shipGarbage);
+
+        //printGarbageDetails(garbageToLoad);
+
         if (isValidGarbageLoad(shipGarbage, garbageToLoad, sortedPlanetGarbage.size() == 1)) {
             print2DArray(shipGarbage);
             tetrisClient.collectGarbage(garbageToLoad);
@@ -218,9 +226,28 @@ public class SpaceGarbageScript {
             return true;
         } else if (initialLoad != 0 && totalLoad != totalShipCapacity && Math.ceil(additionalLoadPercentage) >= 5) {
             return true;
-        } else if (totalLoad == totalShipCapacity) {
-            return true;
+        } else return totalLoad == totalShipCapacity;
+    }
+
+    public static Integer[][] copyArray(Integer[][] original) {
+        Integer[][] copy = new Integer[original.length][];
+        for (int i = 0; i < original.length; i++) {
+            copy[i] = Arrays.copyOf(original[i], original[i].length);
         }
-        return false;
+        return copy;
+    }
+
+    public static void printArrayWithNewGarbage(Integer[][] before, Integer[][] after) {
+        for (int y = 0; y < after.length; y++) {
+            for (int x = 0; x < after[y].length; x++) {
+                if (after[y][x] == 1 && before[y][x] == 0) {
+                    System.out.print("2 ");
+                } else {
+                    System.out.print(after[y][x] + " ");
+                }
+            }
+            System.out.println();
+        }
+        System.out.println();
     }
 }

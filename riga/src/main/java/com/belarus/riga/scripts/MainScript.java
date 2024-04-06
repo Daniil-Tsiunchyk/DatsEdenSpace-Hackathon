@@ -82,16 +82,12 @@ public class MainScript {
                             System.out.println("planet is not clear");
                             markPlanet(planetFlagInfoList, anotherResponse.getShip().getPlanet().getName(), 0);
                         }
-                        // Обход несколько раз
-                        // jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), DEFAULT_PLANET);
-                        // postTravel(jsonPayload);
-                        // continue;
+
                     } else {
                         errorCount++;
                         System.out.println(anotherResponse.getShip().getPlanet().getGarbage());
                         System.out.println("planet is 1 clear");
                         markPlanet(planetFlagInfoList, anotherResponse.getShip().getPlanet().getName(), 1);
-                        // markPlanet(planetFlagInfoList, anotherResponse.getShip().getPlanet().getName(), 3);
                     }
                 } catch (Exception e) {
                     errorCount++;
