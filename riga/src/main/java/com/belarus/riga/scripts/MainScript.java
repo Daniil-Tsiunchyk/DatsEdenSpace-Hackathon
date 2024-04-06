@@ -14,7 +14,7 @@ import static com.belarus.riga.scripts.SpaceGarbageScript.*;
 
 public class MainScript {
     private static final String DEFAULT_PLANET = "Eden";
-    private static final double CAPACITY_THRESHOLD = 0.6;
+    private static final double CAPACITY_THRESHOLD = 0.60;
     private static final UniverseClient universeClient = new UniverseClient();
     private static final TravelClient travelClient = new TravelClient();
 
@@ -67,30 +67,35 @@ public class MainScript {
 
 
                 try {
-                    if (!manageGarbage() && !response.getShip().getPlanet().getGarbage().isEmpty()) {
-                        errorCount++;
-                        markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 1);
-                    } else {
-                        errorCount = 0;
-                        if (response.getShip().getPlanet().getGarbage().isEmpty()) {
-                            System.out.println("planet is clear");
+                    boolean garbage = manageGarbage();
+                    PlayerUniverseResponse anotherResponse = getPlayerUniverse();
 
-                            markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 3);
+                    if (garbage) {
+                        if (anotherResponse.getShip().getPlanet().getGarbage().isEmpty()) {
+                            errorCount = 0;
+                            System.out.println("planet is clear");
+                            markPlanet(planetFlagInfoList, anotherResponse.getShip().getPlanet().getName(), 3);
                         } else {
+                            System.out.println(anotherResponse.getShip().getPlanet().getGarbage());
                             System.out.println("planet is not clear");
-                            markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 0);
+                            markPlanet(planetFlagInfoList, anotherResponse.getShip().getPlanet().getName(), 0);
                         }
+                    } else {
+                        errorCount++;
+                        System.out.println(anotherResponse.getShip().getPlanet().getGarbage());
+                        System.out.println("planet is 1 clear");
+                        markPlanet(planetFlagInfoList, anotherResponse.getShip().getPlanet().getName(), 3);
                     }
                 } catch (Exception e) {
                     errorCount++;
-                    markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 1);
+                    markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 3);
                     e.printStackTrace();
                 }
             } else {
                 jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), DEFAULT_PLANET);
             }
             try {
-                Thread.sleep(250);
+                Thread.sleep(300);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
