@@ -5,89 +5,97 @@ import com.belarus.riga.classes.PlanetTravel;
 import com.belarus.riga.classes.PlayerUniverseResponse;
 import com.belarus.riga.client.TravelClient;
 import com.belarus.riga.client.UniverseClient;
+
 import java.util.List;
 
 import static com.belarus.riga.scripts.PlanetTravelScript.*;
+import static com.belarus.riga.scripts.SpaceGarbageScript.countCapacity;
+import static com.belarus.riga.scripts.SpaceGarbageScript.parseShipGarbage;
 
 
 public class MainScript {
+    private static final String DEFAULT_PLANET = "Eden";
+    private static final double CAPACITY_THRESHOLD = 0.7;
+    private static final UniverseClient universeClient = new UniverseClient();
+    private static final TravelClient travelClient = new TravelClient();
+
     public static void main(String[] args) {
         List<PlanetTravel> travels;
         List<PlanetFlagInfo> planetFlagInfoList;
-        PlayerUniverseResponse response = new PlayerUniverseResponse();
-        TravelClient travelClient = new TravelClient();
-        UniverseClient client = new UniverseClient();
 
-        //Запрос на инфу общую
-        try {
-            response = client.getPlayerUniverse();
-            System.out.println(response);
-            Thread.sleep(300);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        PlayerUniverseResponse response = getPlayerUniverse();
         travels = PlanetTravelScript.mapData(response.getUniverse());
         planetFlagInfoList = PlanetTravelScript.convertToFlagInfoList(travels);
-        while(true){
+        while (true) {
             System.out.println("-------------------------------------");
             try {
-                response = client.getPlayerUniverse();
+                response = universeClient.getPlayerUniverse();
                 System.out.println(response);
                 Thread.sleep(300);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if(response.getShip().getPlanet().getGarbage().isEmpty()){
-                for (PlanetFlagInfo planetFlagInfo : planetFlagInfoList) {
-                    if (planetFlagInfo.getNamePlanet().equals(response.getShip().getPlanet().getName())) {
-                        planetFlagInfo.setClear(true);
-                        System.out.println("Мы сюда зашли зачем-то");
-                        break;
-                    }
-                }
+
+
+            if (response.getShip().getPlanet().getGarbage().isEmpty()) {
+                markPlanetAsClean(planetFlagInfoList, response.getShip().getPlanet().getName());
             }
 
             travels = PlanetTravelScript.mapData(response.getUniverse());
-            System.out.println("Universe: "+travels);
-            List<PlanetFlagInfo> sortedClosestPlanet = PlanetTravelScript.findClosestPlanet(planetFlagInfoList,travels,response.getShip().getPlanet().getName());
-            System.out.println("Количество планет: " + sortedClosestPlanet.size());
-            System.out.println("Отсортированный: "+sortedClosestPlanet);
-            if(sortedClosestPlanet.isEmpty()){
+            List<PlanetFlagInfo> sortedClosestPlanet = PlanetTravelScript.findClosestPlanet(planetFlagInfoList, travels, response.getShip().getPlanet().getName());
+            if (sortedClosestPlanet.isEmpty()) {
                 System.out.println("Все планеты очищены");
                 break;
             }
-            //todo Проверка на Copasity
-            //
-            //todo Проверка на Copasity
-            if(false){
 
-                String jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), sortedClosestPlanet.getFirst().getNamePlanet());
+            Integer[][] shipGarbage = parseShipGarbage(response.getShip());
+            int capacity = countCapacity(shipGarbage);
+
+            String jsonPayload;
+            if (capacity <= (response.getShip().getCapacityY() * response.getShip().getCapacityX() * CAPACITY_THRESHOLD)) {
+
+                jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), sortedClosestPlanet.getFirst().getNamePlanet());
 
                 //todo Затестить
-                try {
-                    travelClient.postTravel(jsonPayload);
-                    Thread.sleep(300);
 
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
                 //todo Тетрис
                 //
                 //todo Тетрис
+            } else {
+                jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), DEFAULT_PLANET);
             }
-            else {
-                String jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(),"Eden" );
-                try {
-                    travelClient.postTravel(jsonPayload);
-                    Thread.sleep(300);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-
-            }
+            postTravel(jsonPayload);
             System.out.println("-------------------------------------");
         }
+    }
 
+    private static PlayerUniverseResponse getPlayerUniverse() {
+        try {
+            PlayerUniverseResponse response = MainScript.universeClient.getPlayerUniverse();
+            System.out.println(response);
+            Thread.sleep(250);
+            return response;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get player universe", e);
+        }
+    }
+
+    private static void markPlanetAsClean(List<PlanetFlagInfo> planetFlagInfoList, String planetName) {
+        for (PlanetFlagInfo planetFlagInfo : planetFlagInfoList) {
+            if (planetFlagInfo.getNamePlanet().equals(planetName)) {
+                planetFlagInfo.setClear(true);
+                System.out.println("Планета " + planetName + " очищена");
+                break;
+            }
+        }
+    }
+
+    private static void postTravel(String jsonPayload) {
+        try {
+            MainScript.travelClient.postTravel(jsonPayload);
+            Thread.sleep(250);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to post travel", e);
+        }
     }
 }

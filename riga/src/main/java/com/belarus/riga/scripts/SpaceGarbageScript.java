@@ -13,7 +13,7 @@ public class SpaceGarbageScript {
 
     public static Integer[][] parseShipGarbage(Ship ship) {
         Integer[][] cargoSpace = new Integer[ship.getCapacityY()][ship.getCapacityX()];
-
+        initializeCargoSpace(cargoSpace);
         for (Map.Entry<String, List<List<Integer>>> entry : ship.getGarbage().entrySet()) {
             for (List<Integer> coordinates : entry.getValue()) {
                 Integer x = coordinates.get(0);
@@ -23,6 +23,18 @@ public class SpaceGarbageScript {
         }
 
         return cargoSpace;
+    }
+
+    public static int countCapacity(Integer[][] array) {
+        int count = 0;
+        for (Integer[] row : array) {
+            for (Integer element : row) {
+                if (element == 1) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
     public static List<Map.Entry<String, List<List<Integer>>>> sortPlanetGarbage(Map<String, List<List<Integer>>> garbage) {
@@ -38,7 +50,7 @@ public class SpaceGarbageScript {
 
         // Шаг 1: Парсим текущий garbage
         Integer[][] shipGarbage = parseShipGarbage(response.getShip());
-        printCargoSpace(shipGarbage);
+        print2DArray(shipGarbage);
 
         // Шаг 2: Сортируем garbage с планеты
         List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage = sortPlanetGarbage(response.getShip().getPlanet().getGarbage());
@@ -51,15 +63,6 @@ public class SpaceGarbageScript {
         PlayerCollectResponse collectResponse = tetrisClient.collectGarbage(garbageToLoad);
         System.out.println("Response from server: " + collectResponse);
         Thread.sleep(300);
-    }
-
-    public static void printCargoSpace(Integer[][] cargoSpace) {
-        for (Integer[] row : cargoSpace) {
-            for (Integer cell : row) {
-                System.out.print(cell + " ");
-            }
-            System.out.println();
-        }
     }
 
     private static boolean tryToFitFigure(Integer[][] shipGarbage, List<List<Integer>> figure, int startX, int startY) {
