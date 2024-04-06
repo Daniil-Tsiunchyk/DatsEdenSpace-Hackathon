@@ -74,6 +74,7 @@ public class MainScript {
                         errorCount = 0;
                         if (response.getShip().getPlanet().getGarbage().isEmpty()) {
                             System.out.println("planet is clear");
+
                             markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), 3);
                         } else {
                             System.out.println("planet is not clear");

@@ -90,20 +90,6 @@ public class SpaceGarbageScript {
         return false;
     }
 
-    private static boolean canPlaceFigure(Integer[][] shipGarbage, List<List<Integer>> figure) {
-        for (int angle : new int[]{0, 90, 180, 270}) {
-            Integer[][] shipGarbageCopy = Arrays.stream(shipGarbage)
-                    .map(Integer[]::clone)
-                    .toArray(Integer[][]::new);
-            List<List<Integer>> rotatedFigure = rotateFigure(figure, angle);
-            List<List<Integer>> dummyCoordinates = new ArrayList<>();
-            if (findSpaceForFigure(shipGarbageCopy, rotatedFigure, dummyCoordinates)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private static List<List<Integer>> placeFigure(Integer[][] shipGarbage, List<List<Integer>> figure) {
         for (int angle : new int[]{0, 90, 180, 270}) {
             List<List<Integer>> rotatedFigure = rotateFigure(figure, angle);
@@ -113,44 +99,6 @@ public class SpaceGarbageScript {
             }
         }
         return Collections.emptyList();
-    }
-
-    public static Map<String, List<List<Integer>>> loadGarbage_1(Integer[][] shipGarbage, List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage) {
-        Map<String, List<List<Integer>>> loadedGarbage = new HashMap<>();
-        int currentCapacity = countCapacity(shipGarbage);
-        int totalCapacity = shipGarbage.length * (shipGarbage[0].length);
-
-        int minimumLoad;
-
-        for (Map.Entry<String, List<List<Integer>>> garbageEntry : sortedPlanetGarbage) {
-            String garbageID = garbageEntry.getKey();
-            List<List<Integer>> figure = garbageEntry.getValue();
-
-            if (currentCapacity == 0) {
-                minimumLoad = (int) Math.ceil(totalCapacity * 0.3);
-            } else {
-                minimumLoad = (int) Math.ceil(totalCapacity * 0.05);
-            }
-
-            int potentialCapacity = currentCapacity + figure.size();
-
-            System.out.println("Текущая вместимость:" + currentCapacity);
-            System.out.println("Суммарная вместимость:" + totalCapacity);
-            System.out.println("Минимальная загрузка:" + minimumLoad);
-            System.out.println("Потенциальная вместимость:" + potentialCapacity);
-
-            //   if (canPlaceFigure(shipGarbage, figure) && (potentialCapacity >= minimumLoad || potentialCapacity == totalCapacity)) {
-            //todo Учитывать валидность загрузки
-            if (canPlaceFigure(shipGarbage, figure)) {
-                List<List<Integer>> newCoordinates = placeFigure(shipGarbage, figure);
-                loadedGarbage.put(garbageID, newCoordinates);
-
-                currentCapacity = potentialCapacity;
-                System.out.println();
-            }
-        }
-
-        return loadedGarbage;
     }
 
     public static Map<String, List<List<Integer>>> loadGarbage(Integer[][] shipGarbage, List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage) {
