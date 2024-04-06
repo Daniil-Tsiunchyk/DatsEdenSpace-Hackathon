@@ -19,80 +19,86 @@ public class MainScript {
     private static final TravelClient travelClient = new TravelClient();
 
     public static void main(String[] args) {
-        List<PlanetTravel> travels;
-        List<PlanetFlagInfo> planetFlagInfoList;
-
-        PlayerUniverseResponse response = getPlayerUniverse();
-        travels = PlanetTravelScript.mapData(response.getUniverse());
-        planetFlagInfoList = PlanetTravelScript.convertToFlagInfoList(travels);
-        int errorCount = 0;
-        String jsonPayload;
         while (true) {
-            System.out.println("-------------------------------------");
-
             try {
-                response = universeClient.getPlayerUniverse();
-                System.out.println(response);
-                Thread.sleep(300);
+
+                List<PlanetTravel> travels;
+                List<PlanetFlagInfo> planetFlagInfoList;
+
+                PlayerUniverseResponse response = getPlayerUniverse();
+                travels = PlanetTravelScript.mapData(response.getUniverse());
+                planetFlagInfoList = PlanetTravelScript.convertToFlagInfoList(travels);
+                int errorCount = 0;
+                String jsonPayload;
+                while (true) {
+                    System.out.println("-------------------------------------");
+
+                    try {
+                        response = universeClient.getPlayerUniverse();
+                        System.out.println(response);
+                        Thread.sleep(300);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if (errorCount >= 3) {
+
+                        errorCount = 0;
+                        jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), DEFAULT_PLANET);
+                        postTravel(jsonPayload);
+                        continue;
+                    }
+
+                    travels = PlanetTravelScript.mapData(response.getUniverse());
+                    List<PlanetFlagInfo> sortedClosestPlanet = PlanetTravelScript.findClosestPlanet(planetFlagInfoList, travels, response.getShip().getPlanet().getName());
+                    if (sortedClosestPlanet.isEmpty()) {
+                        System.out.println("Все планеты очищены");
+                        break;
+                    } else {
+                        System.out.println("Количество планет осталось: " + sortedClosestPlanet.size());
+                    }
+
+                    Integer[][] shipGarbage = parseShipGarbage(response.getShip());
+                    int capacity = countCapacity(shipGarbage);
+                    System.out.println(capacity);
+                    System.out.println(response.getShip().getCapacityY() * response.getShip().getCapacityX() * CAPACITY_THRESHOLD);
+
+                    if (capacity <= (response.getShip().getCapacityY() * response.getShip().getCapacityX() * CAPACITY_THRESHOLD)) {
+
+                        jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), sortedClosestPlanet.getFirst().getNamePlanet());
+
+                        //todo Тетрис
+                        try {
+                            if (!response.getShip().getPlanet().getGarbage().isEmpty()) {
+                                System.out.println("Мы делаем тетрис");
+                                if (!manageGarbage()) {
+                                    errorCount++;
+                                    markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), false);
+                                } else {
+                                    errorCount = 0;
+                                    System.out.println("planet is clear");
+                                    if (response.getShip().getPlanet().getGarbage().isEmpty()) {
+                                        markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), true);
+                                    }
+                                }
+
+                            }
+
+                        } catch (Exception e) {
+                            errorCount++;
+                            markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), false);
+                            e.printStackTrace();
+                        }
+                        //todo Тетрис
+                    } else {
+                        jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), DEFAULT_PLANET);
+                    }
+
+                    postTravel(jsonPayload);
+                    System.out.println("-------------------------------------");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if (errorCount >= 3) {
-
-                errorCount = 0;
-                jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), DEFAULT_PLANET);
-                postTravel(jsonPayload);
-                continue;
-            }
-
-            travels = PlanetTravelScript.mapData(response.getUniverse());
-            List<PlanetFlagInfo> sortedClosestPlanet = PlanetTravelScript.findClosestPlanet(planetFlagInfoList, travels, response.getShip().getPlanet().getName());
-            if (sortedClosestPlanet.isEmpty()) {
-                System.out.println("Все планеты очищены");
-                break;
-            }
-            else{
-                System.out.println("Количество планет осталось: " + sortedClosestPlanet.size());
-            }
-
-            Integer[][] shipGarbage = parseShipGarbage(response.getShip());
-            int capacity = countCapacity(shipGarbage);
-            System.out.println(capacity);
-            System.out.println(response.getShip().getCapacityY() * response.getShip().getCapacityX() * CAPACITY_THRESHOLD);
-
-            if (capacity <= (response.getShip().getCapacityY() * response.getShip().getCapacityX() * CAPACITY_THRESHOLD)) {
-
-                jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), sortedClosestPlanet.getFirst().getNamePlanet());
-
-                //todo Тетрис
-                try {
-                    if (!response.getShip().getPlanet().getGarbage().isEmpty()) {
-                        System.out.println("Мы делаем тетрис");
-                        if (!manageGarbage()) {
-                            errorCount++;
-                            markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), false);
-                        } else {
-                            errorCount = 0;
-                            System.out.println("planet is clear");
-                            if (response.getShip().getPlanet().getGarbage().isEmpty()) {
-                                markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), true);
-                            }
-                        }
-
-                    }
-
-                } catch (Exception e) {
-                    errorCount++;
-                    markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), false);
-                    e.printStackTrace();
-                }
-                //todo Тетрис
-            } else {
-                jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), DEFAULT_PLANET);
-            }
-
-            postTravel(jsonPayload);
-            System.out.println("-------------------------------------");
         }
     }
 

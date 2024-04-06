@@ -186,6 +186,4 @@ public class SpaceGarbageScript {
         int minY = figure.stream().min(Comparator.comparingInt(block -> block.get(1))).get().get(1);
         return figure.stream().map(block -> Arrays.asList(block.getFirst() - minX, block.get(1) - minY)).collect(Collectors.toList());
     }
-
-
 }
