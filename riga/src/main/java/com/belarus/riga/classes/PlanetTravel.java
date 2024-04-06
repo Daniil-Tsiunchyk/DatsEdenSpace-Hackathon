@@ -8,7 +8,7 @@ import lombok.Data;
 public class PlanetTravel {
     private String departurePlanet;
     private String landingPlanet;
-    private int fuel;
+    private Integer fuel;
 
     @Override
     public String toString() {

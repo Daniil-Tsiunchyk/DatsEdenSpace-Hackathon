@@ -15,9 +15,9 @@ public class PlayerUniverseResponse {
 
     @Data
     public static class Ship {
-        private int capacityX;
-        private int capacityY;
-        private int fuelUsed;
+        private Integer capacityX;
+        private Integer capacityY;
+        private Integer fuelUsed;
         private Map<String, List<List<Integer>>> garbage;
         private Planet planet;
     }
