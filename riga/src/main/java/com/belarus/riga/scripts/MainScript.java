@@ -14,7 +14,7 @@ import static com.belarus.riga.scripts.SpaceGarbageScript.*;
 
 public class MainScript {
     private static final String DEFAULT_PLANET = "Eden";
-    private static final double CAPACITY_THRESHOLD = 0.35;
+    private static final double CAPACITY_THRESHOLD = 0.5;
     private static final UniverseClient universeClient = new UniverseClient();
     private static final TravelClient travelClient = new TravelClient();
 
@@ -25,8 +25,11 @@ public class MainScript {
         PlayerUniverseResponse response = getPlayerUniverse();
         travels = PlanetTravelScript.mapData(response.getUniverse());
         planetFlagInfoList = PlanetTravelScript.convertToFlagInfoList(travels);
+        int errorCount = 0;
+        String jsonPayload;
         while (true) {
             System.out.println("-------------------------------------");
+            System.out.println("error counter "+errorCount);
             try {
                 response = universeClient.getPlayerUniverse();
                 System.out.println(response);
@@ -34,10 +37,12 @@ public class MainScript {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            if (errorCount >= 3) {
 
-
-            if (response.getShip().getPlanet().getGarbage().isEmpty()) {
-                markPlanetAsClean(planetFlagInfoList, response.getShip().getPlanet().getName());
+                errorCount = 0;
+                jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), DEFAULT_PLANET);
+                postTravel(jsonPayload);
+                continue;
             }
 
             travels = PlanetTravelScript.mapData(response.getUniverse());
@@ -51,7 +56,7 @@ public class MainScript {
             int capacity = countCapacity(shipGarbage);
             System.out.println(capacity);
             System.out.println(response.getShip().getCapacityY() * response.getShip().getCapacityX() * CAPACITY_THRESHOLD);
-            String jsonPayload;
+
             if (capacity <= (response.getShip().getCapacityY() * response.getShip().getCapacityX() * CAPACITY_THRESHOLD)) {
 
                 jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), sortedClosestPlanet.getFirst().getNamePlanet());
@@ -59,15 +64,36 @@ public class MainScript {
                 //todo Тетрис
                 try {
                     if (!response.getShip().getPlanet().getGarbage().isEmpty()) {
-                        manageGarbage();
+                        System.out.println("Мы делаем тетрис");
+                        if (!manageGarbage()) {
+                            errorCount++;
+                            markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), false);
+                        } else {
+                            errorCount = 0;
+                            System.out.println("planet is clear");
+                            if (response.getShip().getPlanet().getGarbage().isEmpty()) {
+                                markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), true);
+                            }
+                        }
+
+                    }
+                    else{
+                        markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), true);
                     }
                 } catch (Exception e) {
+                    errorCount++;
+                    markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), false);
                     e.printStackTrace();
                 }
                 //todo Тетрис
             } else {
+
+                if (response.getShip().getPlanet().getGarbage().isEmpty()) {
+                    markPlanet(planetFlagInfoList, response.getShip().getPlanet().getName(), true);
+                }
                 jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), DEFAULT_PLANET);
             }
+
             postTravel(jsonPayload);
             System.out.println("-------------------------------------");
         }
@@ -84,11 +110,11 @@ public class MainScript {
         }
     }
 
-    private static void markPlanetAsClean(List<PlanetFlagInfo> planetFlagInfoList, String planetName) {
+    private static void markPlanet(List<PlanetFlagInfo> planetFlagInfoList, String planetName, boolean flag) {
         for (PlanetFlagInfo planetFlagInfo : planetFlagInfoList) {
             if (planetFlagInfo.getNamePlanet().equals(planetName)) {
-                planetFlagInfo.setClear(true);
-                System.out.println("Планета " + planetName + " очищена");
+                planetFlagInfo.setClear(flag);
+                System.out.println("Планета " + planetName + " значение: " + flag);
                 break;
             }
         }

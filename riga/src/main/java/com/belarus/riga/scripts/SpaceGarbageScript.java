@@ -43,33 +43,40 @@ public class SpaceGarbageScript {
         return sortedGarbage;
     }
 
-    public static void manageGarbage() throws Exception {
+    public static boolean manageGarbage() throws Exception {
         UniverseClient universeClient = new UniverseClient();
         TetrisClient tetrisClient = new TetrisClient();
         PlayerUniverseResponse response = universeClient.getPlayerUniverse();
 
-        // Шаг 1: Парсим текущий garbage
+        // Step 1: Parse current garbage
         Integer[][] shipGarbage = parseShipGarbage(response.getShip());
         print2DArray(shipGarbage);
 
-        // Шаг 2: Сортируем garbage с планеты
+        // Step 2: Sort planet garbage
         List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage = sortPlanetGarbage(response.getShip().getPlanet().getGarbage());
         System.out.println(sortedPlanetGarbage);
-
-        // Шаг 3: Загрузка объектов в garbage
+        if (sortedPlanetGarbage.isEmpty()) return true;
+        // Step 3: Load objects into garbage
         Map<String, List<List<Integer>>> garbageToLoad = loadGarbage(shipGarbage, sortedPlanetGarbage);
 
-        // Шаг 4: Отправка запросов на сервер
+        //  if (garbageToLoad.isEmpty()) {
+        // If there is no garbage to collect, return false
+        //  return false;
+        //  }
+
+        // Step 4: Send requests to the server
         PlayerCollectResponse collectResponse = tetrisClient.collectGarbage(garbageToLoad);
         System.out.println("Response from server: " + collectResponse);
         Thread.sleep(300);
+
+        // Return true if garbage was collected
+        return true;
     }
 
     private static boolean tryToFitFigure(Integer[][] shipGarbage, List<List<Integer>> figure, int startX, int startY) {
         for (List<Integer> block : figure) {
             int x = startX + block.get(0);
             int y = startY + block.get(1);
-            // Check if the position is within the ship bounds
             if (y < 0 || y >= shipGarbage.length || x < 0 || x >= shipGarbage[y].length || shipGarbage[y][x] != 0) {
                 return false;
             }
@@ -94,50 +101,61 @@ public class SpaceGarbageScript {
         return false;
     }
 
-   // private static boolean canPlaceFigure(Integer[][] shipGarbage, List<List<Integer>> figure) {
-        //   for (int angle : new int[]{0, 90, 180, 270}) {
-        //        List<List<Integer>> rotatedFigure = rotateFigure(figure, angle);
-     //   List<List<Integer>> dummyCoordinates = new ArrayList<>();
-        //    if (findSpaceForFigure(shipGarbage, rotatedFigure, dummyCoordinates)) {
-    //    if (findSpaceForFigure(shipGarbage, figure, dummyCoordinates)) {
-    //        return true;
-    //    }
-        //  }
-    //    return false;
-  //  }
-   private static boolean canPlaceFigure(Integer[][] shipGarbage, List<List<Integer>> figure) {
-       // Create a copy of shipGarbage
-       Integer[][] shipGarbageCopy = Arrays.stream(shipGarbage)
-               .map(Integer[]::clone)
-               .toArray(Integer[][]::new);
-       List<List<Integer>> dummyCoordinates = new ArrayList<>();
-       return findSpaceForFigure(shipGarbageCopy, figure, dummyCoordinates);
-   }
-    private static List<List<Integer>> placeFigure(Integer[][] shipGarbage, List<List<Integer>> figure) {
-        //  for (int angle : new int[]{0, 90, 180, 270}) {
-        //    List<List<Integer>> rotatedFigure = rotateFigure(figure, angle);
-        List<List<Integer>> newCoordinates = new ArrayList<>();
-        //    if (findSpaceForFigure(shipGarbage, rotatedFigure, newCoordinates)) {
-        if (findSpaceForFigure(shipGarbage, figure, newCoordinates)) {
-            return newCoordinates;
+    private static boolean canPlaceFigure(Integer[][] shipGarbage, List<List<Integer>> figure) {
+        for (int angle : new int[]{0, 90, 180, 270}) {
+            // Create a copy of shipGarbage
+            Integer[][] shipGarbageCopy = Arrays.stream(shipGarbage)
+                    .map(Integer[]::clone)
+                    .toArray(Integer[][]::new);
+            // Rotate the figure
+            List<List<Integer>> rotatedFigure = rotateFigure(figure, angle);
+            List<List<Integer>> dummyCoordinates = new ArrayList<>();
+            if (findSpaceForFigure(shipGarbageCopy, rotatedFigure, dummyCoordinates)) {
+                return true;
+            }
         }
-        //   }
+        return false;
+    }
+
+    private static List<List<Integer>> placeFigure(Integer[][] shipGarbage, List<List<Integer>> figure) {
+        for (int angle : new int[]{0, 90, 180, 270}) {
+            List<List<Integer>> rotatedFigure = rotateFigure(figure, angle);
+            List<List<Integer>> newCoordinates = new ArrayList<>();
+            if (findSpaceForFigure(shipGarbage, rotatedFigure, newCoordinates)) {
+                //if (findSpaceForFigure(shipGarbage, figure, newCoordinates)) {
+                return newCoordinates;
+            }
+        }
         return Collections.emptyList();
     }
 
     public static Map<String, List<List<Integer>>> loadGarbage(Integer[][] shipGarbage, List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage) {
         Map<String, List<List<Integer>>> loadedGarbage = new HashMap<>();
+        //  int currentCapacity = countCapacity(shipGarbage);
+        //  int totalCapacity = shipGarbage.length * (shipGarbage[0].length);
+        //  System.out.println(currentCapacity+" - - - -- " +totalCapacity);
+        //  int minimumLoad;
 
         for (Map.Entry<String, List<List<Integer>>> garbageEntry : sortedPlanetGarbage) {
             String garbageID = garbageEntry.getKey();
             List<List<Integer>> figure = garbageEntry.getValue();
 
+            //      if (currentCapacity == 0) {
+            //          minimumLoad = (int) Math.ceil(totalCapacity * 0.3);
+            //     } else {
+            //         minimumLoad = (int) Math.ceil(totalCapacity * 0.05);
+            //     }
+
+            //      int potentialCapacity = currentCapacity + figure.size();
+
+            //     if (canPlaceFigure(shipGarbage, figure) && (potentialCapacity >= minimumLoad || potentialCapacity == totalCapacity)) {
             if (canPlaceFigure(shipGarbage, figure)) {
                 List<List<Integer>> newCoordinates = placeFigure(shipGarbage, figure);
                 loadedGarbage.put(garbageID, newCoordinates);
                 System.out.println("Старые координаты" + figure);
                 System.out.println("Новые координаты" + newCoordinates);
-            //    break;
+
+                //    currentCapacity = potentialCapacity;
             }
         }
 

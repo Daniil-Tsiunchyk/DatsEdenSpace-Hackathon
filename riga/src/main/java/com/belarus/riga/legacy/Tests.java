@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 public class Tests {
 
-    private static List<List<Integer>> rotateFigure(List<List<Integer>> figure, int angle) {
+    public static List<List<Integer>> rotateFigure(List<List<Integer>> figure, int angle) {
         List<List<Integer>> rotatedFigure = new ArrayList<>();
         for (List<Integer> block : figure) {
             int x = block.get(0);
