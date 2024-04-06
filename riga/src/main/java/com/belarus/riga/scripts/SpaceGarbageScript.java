@@ -42,6 +42,7 @@ public class SpaceGarbageScript {
         return sortedGarbage;
     }
 
+
     public static boolean manageGarbage() throws Exception {
         UniverseClient universeClient = new UniverseClient();
         TetrisClient tetrisClient = new TetrisClient();
@@ -57,8 +58,10 @@ public class SpaceGarbageScript {
         List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage = sortPlanetGarbage(response.getShip().getPlanet().getGarbage());
 
         Map<String, List<List<Integer>>> garbageToLoad = loadGarbage(shipGarbage, sortedPlanetGarbage);
-        print2DArray(shipGarbage);
-        tetrisClient.collectGarbage(garbageToLoad);
+        if(isValidGarbageLoad(shipGarbage, garbageToLoad, sortedPlanetGarbage.size() == 1)) {
+            print2DArray(shipGarbage);
+            tetrisClient.collectGarbage(garbageToLoad);
+        }
         return true;
     }
 
@@ -160,6 +163,7 @@ public class SpaceGarbageScript {
             }
             System.out.println();
         }
+        System.out.println();
     }
 
     public static List<List<Integer>> rotateFigure(List<List<Integer>> figure, int angle) {
@@ -182,5 +186,25 @@ public class SpaceGarbageScript {
         int minX = figure.stream().min(Comparator.comparingInt(List::getFirst)).get().getFirst();
         int minY = figure.stream().min(Comparator.comparingInt(block -> block.get(1))).get().get(1);
         return figure.stream().map(block -> Arrays.asList(block.getFirst() - minX, block.get(1) - minY)).collect(Collectors.toList());
+    }
+
+    private static boolean isValidGarbageLoad(Integer[][] shipGarbage, Map<String, List<List<Integer>>> garbageToLoad, boolean isLastGarbageOnPlanet) {
+        int totalShipCapacity = shipGarbage.length * shipGarbage[0].length;
+        int initialLoad = countCapacity(shipGarbage);
+        int additionalLoad = countCombinationCapacity(garbageToLoad);
+        int totalLoad = initialLoad + additionalLoad;
+        double loadPercentage = ((double) totalLoad / totalShipCapacity) * 100;
+        double additionalLoadPercentage = ((double) additionalLoad / totalShipCapacity) * 100;
+
+        if (isLastGarbageOnPlanet) {
+            return true;
+        } else if (initialLoad == 0 && Math.ceil(loadPercentage) >= 30) {
+            return true;
+        } else if (initialLoad != 0 && totalLoad != totalShipCapacity && Math.ceil(additionalLoadPercentage) >= 5) {
+            return true;
+        } else if (totalLoad == totalShipCapacity) {
+            return true;
+        }
+        return false;
     }
 }
