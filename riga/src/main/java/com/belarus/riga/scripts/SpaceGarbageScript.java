@@ -57,7 +57,7 @@ public class SpaceGarbageScript {
         List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage = sortPlanetGarbage(response.getShip().getPlanet().getGarbage());
 
         Map<String, List<List<Integer>>> garbageToLoad = loadGarbage(shipGarbage, sortedPlanetGarbage);
-
+        print2DArray(shipGarbage);
         tetrisClient.collectGarbage(garbageToLoad);
         return true;
     }
@@ -115,7 +115,7 @@ public class SpaceGarbageScript {
         return Collections.emptyList();
     }
 
-    public static Map<String, List<List<Integer>>> loadGarbage(Integer[][] shipGarbage, List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage) {
+    public static Map<String, List<List<Integer>>> loadGarbage_1(Integer[][] shipGarbage, List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage) {
         Map<String, List<List<Integer>>> loadedGarbage = new HashMap<>();
         int currentCapacity = countCapacity(shipGarbage);
         int totalCapacity = shipGarbage.length * (shipGarbage[0].length);
@@ -139,16 +139,64 @@ public class SpaceGarbageScript {
             System.out.println("Минимальная загрузка:" + minimumLoad);
             System.out.println("Потенциальная вместимость:" + potentialCapacity);
 
-            //     if (canPlaceFigure(shipGarbage, figure) && (potentialCapacity >= minimumLoad || potentialCapacity == totalCapacity)) {
+            //   if (canPlaceFigure(shipGarbage, figure) && (potentialCapacity >= minimumLoad || potentialCapacity == totalCapacity)) {
+            //todo Учитывать валидность загрузки
             if (canPlaceFigure(shipGarbage, figure)) {
                 List<List<Integer>> newCoordinates = placeFigure(shipGarbage, figure);
                 loadedGarbage.put(garbageID, newCoordinates);
 
-                //currentCapacity = potentialCapacity;
+                currentCapacity = potentialCapacity;
+                System.out.println();
             }
         }
 
         return loadedGarbage;
+    }
+
+    public static Map<String, List<List<Integer>>> loadGarbage(Integer[][] shipGarbage, List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage) {
+        Map<String, List<List<Integer>>> bestCombination = new HashMap<>();
+        backtrack(shipGarbage, sortedPlanetGarbage, 0, new HashMap<>(), bestCombination);
+        return bestCombination;
+    }
+
+    private static void backtrack(Integer[][] shipGarbage, List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage, int position,
+                                  Map<String, List<List<Integer>>> currentCombination,
+                                  Map<String, List<List<Integer>>> bestCombination) {
+        // Если текущая комбинация лучше, чем лучшая найденная до этого, сохраните ее
+        if (countCombinationCapacity(currentCombination) > countCombinationCapacity(bestCombination)) {
+            bestCombination.clear();
+            bestCombination.putAll(currentCombination);
+        }
+
+        for (int i = position; i < sortedPlanetGarbage.size(); i++) {
+            Map.Entry<String, List<List<Integer>>> garbageEntry = sortedPlanetGarbage.get(i);
+            String garbageID = garbageEntry.getKey();
+
+            List<List<Integer>> figure = garbageEntry.getValue();
+            List<List<Integer>> newCoordinates = placeFigure(shipGarbage, figure);
+
+            // Если фигура поместилась в трюм, добавьте ее в текущую комбинацию и продолжите поиск
+            if (!newCoordinates.isEmpty()) {
+                currentCombination.put(garbageID, newCoordinates);
+                backtrack(shipGarbage, sortedPlanetGarbage, i + 1, currentCombination, bestCombination);
+                currentCombination.remove(garbageID);
+
+                // Удалите фигуру из трюма после просмотра всех возможных комбинаций с ней
+                for (List<Integer> block : figure) {
+                    int x = block.get(0);
+                    int y = block.get(1);
+                    shipGarbage[y][x] = 0;
+                }
+            }
+        }
+    }
+
+    private static int countCombinationCapacity(Map<String, List<List<Integer>>> combination) {
+        int total = 0;
+        for (List<List<Integer>> figure : combination.values()) {
+            total += figure.size();
+        }
+        return total;
     }
 
     public static void initializeCargoSpace(Integer[][] cargoSpace) {
