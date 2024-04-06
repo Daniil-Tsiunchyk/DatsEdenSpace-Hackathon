@@ -9,8 +9,7 @@ import com.belarus.riga.client.UniverseClient;
 import java.util.List;
 
 import static com.belarus.riga.scripts.PlanetTravelScript.*;
-import static com.belarus.riga.scripts.SpaceGarbageScript.countCapacity;
-import static com.belarus.riga.scripts.SpaceGarbageScript.parseShipGarbage;
+import static com.belarus.riga.scripts.SpaceGarbageScript.*;
 
 
 public class MainScript {
@@ -56,10 +55,12 @@ public class MainScript {
 
                 jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), sortedClosestPlanet.getFirst().getNamePlanet());
 
-                //todo Затестить
-
                 //todo Тетрис
-                //
+                try {
+                    manageGarbage();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 //todo Тетрис
             } else {
                 jsonPayload = shortestPathInfoString(travels, response.getShip().getPlanet().getName(), DEFAULT_PLANET);

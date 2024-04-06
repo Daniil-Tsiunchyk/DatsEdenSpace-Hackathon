@@ -1,6 +1,5 @@
 package com.belarus.riga.classes;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data

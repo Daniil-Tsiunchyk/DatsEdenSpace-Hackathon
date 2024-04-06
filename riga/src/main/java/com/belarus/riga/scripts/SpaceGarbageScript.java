@@ -69,7 +69,8 @@ public class SpaceGarbageScript {
         for (List<Integer> block : figure) {
             int x = startX + block.get(0);
             int y = startY + block.get(1);
-            if (y >= shipGarbage.length || x >= shipGarbage[y].length || shipGarbage[y][x] != 0) {
+            // Check if the position is within the ship bounds
+            if (y < 0 || y >= shipGarbage.length || x < 0 || x >= shipGarbage[y].length || shipGarbage[y][x] != 0) {
                 return false;
             }
         }
@@ -93,25 +94,34 @@ public class SpaceGarbageScript {
         return false;
     }
 
-    private static boolean canPlaceFigure(Integer[][] shipGarbage, List<List<Integer>> figure) {
-        for (int angle : new int[]{0, 90, 180, 270}) {
-            List<List<Integer>> rotatedFigure = rotateFigure(figure, angle);
-            List<List<Integer>> dummyCoordinates = new ArrayList<>();
-            if (findSpaceForFigure(shipGarbage, rotatedFigure, dummyCoordinates)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
+   // private static boolean canPlaceFigure(Integer[][] shipGarbage, List<List<Integer>> figure) {
+        //   for (int angle : new int[]{0, 90, 180, 270}) {
+        //        List<List<Integer>> rotatedFigure = rotateFigure(figure, angle);
+     //   List<List<Integer>> dummyCoordinates = new ArrayList<>();
+        //    if (findSpaceForFigure(shipGarbage, rotatedFigure, dummyCoordinates)) {
+    //    if (findSpaceForFigure(shipGarbage, figure, dummyCoordinates)) {
+    //        return true;
+    //    }
+        //  }
+    //    return false;
+  //  }
+   private static boolean canPlaceFigure(Integer[][] shipGarbage, List<List<Integer>> figure) {
+       // Create a copy of shipGarbage
+       Integer[][] shipGarbageCopy = Arrays.stream(shipGarbage)
+               .map(Integer[]::clone)
+               .toArray(Integer[][]::new);
+       List<List<Integer>> dummyCoordinates = new ArrayList<>();
+       return findSpaceForFigure(shipGarbageCopy, figure, dummyCoordinates);
+   }
     private static List<List<Integer>> placeFigure(Integer[][] shipGarbage, List<List<Integer>> figure) {
-        for (int angle : new int[]{0, 90, 180, 270}) {
-            List<List<Integer>> rotatedFigure = rotateFigure(figure, angle);
-            List<List<Integer>> newCoordinates = new ArrayList<>();
-            if (findSpaceForFigure(shipGarbage, rotatedFigure, newCoordinates)) {
-                return newCoordinates;
-            }
+        //  for (int angle : new int[]{0, 90, 180, 270}) {
+        //    List<List<Integer>> rotatedFigure = rotateFigure(figure, angle);
+        List<List<Integer>> newCoordinates = new ArrayList<>();
+        //    if (findSpaceForFigure(shipGarbage, rotatedFigure, newCoordinates)) {
+        if (findSpaceForFigure(shipGarbage, figure, newCoordinates)) {
+            return newCoordinates;
         }
+        //   }
         return Collections.emptyList();
     }
 
@@ -125,6 +135,9 @@ public class SpaceGarbageScript {
             if (canPlaceFigure(shipGarbage, figure)) {
                 List<List<Integer>> newCoordinates = placeFigure(shipGarbage, figure);
                 loadedGarbage.put(garbageID, newCoordinates);
+                System.out.println("Старые координаты" + figure);
+                System.out.println("Новые координаты" + newCoordinates);
+            //    break;
             }
         }
 
