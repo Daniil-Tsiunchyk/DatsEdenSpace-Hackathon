@@ -139,6 +139,7 @@ public class PlanetTravelScript {
                 closestPlanetsList.add(planet);
             }
         }
+
         return closestPlanetsList.stream()
                 .sorted(Comparator.comparingInt(PlanetFlagInfo::getFuel))
                 .collect(Collectors.toList());

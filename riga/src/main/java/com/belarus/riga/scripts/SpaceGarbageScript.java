@@ -5,6 +5,7 @@ import com.belarus.riga.classes.PlayerUniverseResponse.Ship;
 import com.belarus.riga.client.TetrisClient;
 import com.belarus.riga.client.UniverseClient;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,10 +44,16 @@ public class SpaceGarbageScript {
     }
 
 
-    public static boolean manageGarbage() throws Exception {
+    public static boolean manageGarbage()  {
         UniverseClient universeClient = new UniverseClient();
         TetrisClient tetrisClient = new TetrisClient();
-        PlayerUniverseResponse response = universeClient.getPlayerUniverse();
+        PlayerUniverseResponse response = null;
+        try {
+            response = universeClient.getPlayerUniverse();
+        } catch (Exception e) {
+            System.out.println("Ошибка при получении данных!");
+            return false;
+        }
 
         if (response.getShip().getPlanet().getGarbage().isEmpty()) {
             return false;
@@ -69,7 +76,12 @@ public class SpaceGarbageScript {
 
         if (isValidGarbageLoad(shipGarbage, garbageToLoad, sortedPlanetGarbage.size() == 1)) {
             print2DArray(shipGarbage);
-            tetrisClient.collectGarbage(garbageToLoad);
+            try {
+                tetrisClient.collectGarbage(garbageToLoad);
+            } catch (IOException e) {
+                System.out.println("Ошибка в постройке: "+ e.getMessage());
+                return false;
+            }
         }
         return true;
     }
