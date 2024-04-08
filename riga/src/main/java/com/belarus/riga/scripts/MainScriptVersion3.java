@@ -51,7 +51,7 @@ public class MainScriptVersion3 {
                 try {
                     Thread.sleep(100);
                     postTravel(jsonPayload);
-                    Thread.sleep(100);
+                    Thread.sleep(200);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -60,6 +60,7 @@ public class MainScriptVersion3 {
 
                 boolean garbage = false;
                 boolean isCurrentPlanetClear = false;
+
                //PathInfo shortestPathInfo = findShortestPath(travels, response.getShip().getPlanet().getName(), sortedClosestPlanet.getFirst().getNamePlanet());
 
 
@@ -85,6 +86,7 @@ public class MainScriptVersion3 {
                     }
 
                 } else {
+                    System.out.println("Мусор вокруг планеты после :");
                     System.out.println(anotherResponse.getShip().getPlanet().getGarbage());
                     System.out.println("WARNING! ERROR! Planet NOT clear");
                     List<PlanetTravel> travels2 = PlanetTravelScript.mapData(anotherResponse.getUniverse());
@@ -106,7 +108,7 @@ public class MainScriptVersion3 {
 
                 Integer[][] shipGarbage = parseShipGarbage(anotherResponse.getShip());
                  System.out.println(anotherResponse.getShip().getGarbage().size()+" - Capacity");
-                 System.out.println("Корабль: "+anotherResponse.getShip().getGarbage());
+                 System.out.println("Багаж после загрузки: "+anotherResponse.getShip().getGarbage());
                 int capacity = countCapacity(shipGarbage);
                 System.out.println("Capaciry: "+capacity +" из 88");
                     /*if (isCurrentPlanetClear && capacity <= (response.getShip().getCapacityY() * response.getShip().getCapacityX() * CAPACITY_THRESHOLD)) {

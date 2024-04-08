@@ -58,7 +58,10 @@ public class SpaceGarbageScript {
         if (response.getShip().getPlanet().getGarbage().isEmpty()) {
             return false;
         }
-
+        System.out.println("Мусор на корабле до :");
+        System.out.println(response.getShip().getGarbage());
+        System.out.println("Мусор вокруг планеты до :");
+        System.out.println(response.getShip().getPlanet().getGarbage());
 
         Integer[][] shipGarbage = parseShipGarbage(response.getShip());
         print2DArray(shipGarbage);
@@ -70,6 +73,7 @@ public class SpaceGarbageScript {
         List<Map.Entry<String, List<List<Integer>>>> sortedPlanetGarbage = sortPlanetGarbage(response.getShip().getPlanet().getGarbage());
 
         Map<String, List<List<Integer>>> garbageToLoad = loadGarbage(shipGarbage, sortedPlanetGarbage);
+
         printArrayWithNewGarbage(shipGarbageCopy, shipGarbage);
 
         //printGarbageDetails(garbageToLoad);
@@ -77,7 +81,19 @@ public class SpaceGarbageScript {
         if (isValidGarbageLoad(shipGarbage, garbageToLoad, sortedPlanetGarbage.size() == 1)) {
             print2DArray(shipGarbage);
             try {
+                garbageToLoad.putAll(response.getShip().getGarbage());
+                System.out.println("Примерная загрузка: "+garbageToLoad);
+                try {
+                    Thread.sleep(150);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 tetrisClient.collectGarbage(garbageToLoad);
+                try {
+                    Thread.sleep(150);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             } catch (IOException e) {
                 System.out.println("Ошибка в постройке: "+ e.getMessage());
                 return false;
@@ -115,6 +131,7 @@ public class SpaceGarbageScript {
     }
 
     private static List<List<Integer>> placeFigure(Integer[][] shipGarbage, List<List<Integer>> figure) {
+
         for (int angle : new int[]{0, 90, 180, 270}) {
             List<List<Integer>> rotatedFigure = rotateFigure(figure, angle);
             List<List<Integer>> newCoordinates = new ArrayList<>();
@@ -180,6 +197,7 @@ public class SpaceGarbageScript {
     public static void print2DArray(Integer[][] array) {
         for (Integer[] row : array) {
             for (Integer item : row) {
+
                 System.out.print(item == 1 ? "█" : " ");
                 System.out.print(" ");
             }
